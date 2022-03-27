@@ -11,7 +11,8 @@
 
 static struct Taskstate ts;
 
-/* For debugging, so print_trapframe can distinguish between printing
+/* 
+ *For debugging, so print_trapframe can distinguish between printing
  * a saved trapframe and printing the current trapframe and print some
  * additional information in the latter case.
  */
@@ -62,9 +63,50 @@ static const char *trapname(int trapno)
 void
 trap_init(void)
 {
+	cprintf("trap init\n");
 	extern struct Segdesc gdt[];
-
+	extern void t_divide();
+	extern void t_debug();
+	extern void t_nmi();
+	extern void t_brkpt();
+	extern void t_oflow();
+	extern void t_bound();
+	extern void t_illop();
+	extern void t_device();
+	extern void t_dblflt();
+	extern void t_tss();
+	extern void t_segnp();
+	extern void t_stack();
+	extern void t_gpflt();
+	extern void t_pgflt();
+	extern void t_fperr();
+	extern void t_align();
+	extern void t_mchk();
+	extern void t_simderr();
+	extern void t_syscall();
+	extern void t_default();
+	cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
+	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 0)
+	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
+	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 1)
+	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 1)
+	SETGATE(idt[T_OFLOW], 1, GD_KT, t_oflow, 1)
+	SETGATE(idt[T_BOUND], 1, GD_KT, t_bound, 1)
+	SETGATE(idt[T_ILLOP], 1, GD_KT, t_illop, 1)
+	SETGATE(idt[T_DEVICE], 1, GD_KT, t_device, 1)
+	SETGATE(idt[T_DBLFLT], 1, GD_KT, t_dblflt, 1)
+	SETGATE(idt[T_TSS], 1, GD_KT, t_tss, 1)
+	SETGATE(idt[T_SEGNP], 1, GD_KT, t_segnp, 1)
+	SETGATE(idt[T_STACK], 1, GD_KT, t_stack, 1)
+	SETGATE(idt[T_GPFLT], 1, GD_KT, t_gpflt, 1)
+	SETGATE(idt[T_PGFLT], 1, GD_KT, t_pgflt, 1)
+	SETGATE(idt[T_FPERR], 1, GD_KT, t_fperr, 1)
+	SETGATE(idt[T_ALIGN], 1, GD_KT, t_align, 1)
+	SETGATE(idt[T_MCHK], 1, GD_KT, t_mchk, 1)
+	SETGATE(idt[T_SIMDERR], 1, GD_KT, t_simderr, 1)
+	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 1)
+	SETGATE(idt[T_DEFAULT], 1, GD_KT, t_default, 1)
 
 	// Per-CPU setup 
 	trap_init_percpu();

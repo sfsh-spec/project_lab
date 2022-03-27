@@ -2,8 +2,7 @@
 
 from gradelib import *
 
-r = Runner(save("jos.out"),
-           stop_breakpoint("readline"))
+r = Runner(save("jos.out"),stop_breakpoint("readline"))
 
 @test(10)
 def test_divzero():

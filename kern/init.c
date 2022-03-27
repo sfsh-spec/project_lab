@@ -16,7 +16,8 @@ void
 i386_init(void)
 {
 	extern char edata[], end[];
-
+	//extern char bootstacktop;
+	// cprintf("######stk top 0x%x\n", bootstacktop);
 	// Before doing anything else, complete the ELF loading process.
 	// Clear the uninitialized global data (BSS) section of our program.
 	// This ensures that all static/global variables start out zero.
@@ -28,6 +29,7 @@ i386_init(void)
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
 
+	cprintf("######stk top 0x%x\n", bootstacktop);
 	// Lab 2 memory management initialization functions
 	mem_init();
 	// cprintf("why is make warning\n");
@@ -42,7 +44,7 @@ i386_init(void)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(user_hello, ENV_TYPE_USER);
+	ENV_CREATE(user_divzero, ENV_TYPE_USER);
 #endif // TEST*
 
 	cprintf("env run \n");

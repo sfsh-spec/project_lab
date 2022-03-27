@@ -1,0 +1,245 @@
++ ld obj/kern/kernel
+ld: warning: section `.bss' type changed to PROGBITS
++ mk obj/kern/kernel.img
+6828 decimal is XXX octal!
+######stk top 0xf011d000
+Physical memory: 131072K available, base = 640K, extended = 130432K
+###end 0xf0184840
+###first free 0xf0185000
+bootstack_addr: 0xf0115000
+kern_pgdir addr: 0xf0185000
+pp1: 0xf01864f8 pp2: 0xf01c5ff8
+pp1 next 0xf01864f0
+low memory finish
+pfl 0xf01864f8
+pfl_next 0xf01864f0
+check_page_free_list() succeeded!
+none free page
+none free page
+check_page_alloc() succeeded!
+none free page
+none free page
+alloc fail
+alloc page table p addr: 0x9f000
+none free page
+none free page
+none free page
+alloc fail
+none free page
+alloc pg tab entry: 0x9f001
+alloc pg tab entry: 0x9f001
+check_page() succeeded!
+b map  va:0xef000000 pa: 0x186000 size: 0x40000
+alloc pg tab entry: 0x9d001
+pde pos 0x3bc
+b map  va:0xef040000 pa: 0x1c6000 size: 0x3c0000
+pde pos 0x3bc
+b map  va:0xeec00000 pa: 0x1c6000 size: 0x1000
+alloc pg tab entry: 0x9e001
+pde pos 0x3bb
+b map  va:0xeec01000 pa: 0x1c7000 size: 0x3ff000
+pde pos 0x3bb
+b map  va:0xefff8000 pa: 0x115000 size: 0x8000
+alloc pg tab entry: 0x9f001
+pde pos 0x3bf
+b map  va:0xf0000000 pa: 0x0 size: 0x10000000
+alloc pg tab entry: 0x9c001
+pde pos 0x3c0
+alloc pg tab entry: 0x9b001
+pde pos 0x3c1
+alloc pg tab entry: 0x9a001
+pde pos 0x3c2
+alloc pg tab entry: 0x99001
+pde pos 0x3c3
+alloc pg tab entry: 0x98001
+pde pos 0x3c4
+alloc pg tab entry: 0x97001
+pde pos 0x3c5
+alloc pg tab entry: 0x96001
+pde pos 0x3c6
+alloc pg tab entry: 0x95001
+pde pos 0x3c7
+alloc pg tab entry: 0x94001
+pde pos 0x3c8
+alloc pg tab entry: 0x93001
+pde pos 0x3c9
+alloc pg tab entry: 0x92001
+pde pos 0x3ca
+alloc pg tab entry: 0x91001
+pde pos 0x3cb
+alloc pg tab entry: 0x90001
+pde pos 0x3cc
+alloc pg tab entry: 0x8f001
+pde pos 0x3cd
+alloc pg tab entry: 0x8e001
+pde pos 0x3ce
+alloc pg tab entry: 0x8d001
+pde pos 0x3cf
+alloc pg tab entry: 0x8c001
+pde pos 0x3d0
+alloc pg tab entry: 0x8b001
+pde pos 0x3d1
+alloc pg tab entry: 0x8a001
+pde pos 0x3d2
+alloc pg tab entry: 0x89001
+pde pos 0x3d3
+alloc pg tab entry: 0x88001
+pde pos 0x3d4
+alloc pg tab entry: 0x87001
+pde pos 0x3d5
+alloc pg tab entry: 0x86001
+pde pos 0x3d6
+alloc pg tab entry: 0x85001
+pde pos 0x3d7
+alloc pg tab entry: 0x84001
+pde pos 0x3d8
+alloc pg tab entry: 0x83001
+pde pos 0x3d9
+alloc pg tab entry: 0x82001
+pde pos 0x3da
+alloc pg tab entry: 0x81001
+pde pos 0x3db
+alloc pg tab entry: 0x80001
+pde pos 0x3dc
+alloc pg tab entry: 0x7f001
+pde pos 0x3dd
+alloc pg tab entry: 0x7e001
+pde pos 0x3de
+alloc pg tab entry: 0x7d001
+pde pos 0x3df
+alloc pg tab entry: 0x7c001
+pde pos 0x3e0
+alloc pg tab entry: 0x7b001
+pde pos 0x3e1
+alloc pg tab entry: 0x7a001
+pde pos 0x3e2
+alloc pg tab entry: 0x79001
+pde pos 0x3e3
+alloc pg tab entry: 0x78001
+pde pos 0x3e4
+alloc pg tab entry: 0x77001
+pde pos 0x3e5
+alloc pg tab entry: 0x76001
+pde pos 0x3e6
+alloc pg tab entry: 0x75001
+pde pos 0x3e7
+alloc pg tab entry: 0x74001
+pde pos 0x3e8
+alloc pg tab entry: 0x73001
+pde pos 0x3e9
+alloc pg tab entry: 0x72001
+pde pos 0x3ea
+alloc pg tab entry: 0x71001
+pde pos 0x3eb
+alloc pg tab entry: 0x70001
+pde pos 0x3ec
+alloc pg tab entry: 0x6f001
+pde pos 0x3ed
+alloc pg tab entry: 0x6e001
+pde pos 0x3ee
+alloc pg tab entry: 0x6d001
+pde pos 0x3ef
+alloc pg tab entry: 0x6c001
+pde pos 0x3f0
+alloc pg tab entry: 0x6b001
+pde pos 0x3f1
+alloc pg tab entry: 0x6a001
+pde pos 0x3f2
+alloc pg tab entry: 0x69001
+pde pos 0x3f3
+alloc pg tab entry: 0x68001
+pde pos 0x3f4
+alloc pg tab entry: 0x67001
+pde pos 0x3f5
+alloc pg tab entry: 0x66001
+pde pos 0x3f6
+alloc pg tab entry: 0x65001
+pde pos 0x3f7
+alloc pg tab entry: 0x64001
+pde pos 0x3f8
+alloc pg tab entry: 0x63001
+pde pos 0x3f9
+alloc pg tab entry: 0x62001
+pde pos 0x3fa
+alloc pg tab entry: 0x61001
+pde pos 0x3fb
+alloc pg tab entry: 0x60001
+pde pos 0x3fc
+alloc pg tab entry: 0x5f001
+pde pos 0x3fd
+alloc pg tab entry: 0x5e001
+pde pos 0x3fe
+alloc pg tab entry: 0x5d001
+pde pos 0x3ff
+gogogo
+check_kern_pgdir() succeeded!
+low memory finish
+pfl 0xf01862e0
+pfl_next 0xf01862d8
+check_page_free_list() succeeded!
+alloc page table p addr: 0x5c000
+check_page_installed_pgdir() succeeded!
+env init done
+trap init done
+user pgdir: 0xf005c000
+b map  va:0xf0000000 pa: 0x0 size: 0x400000
+alloc pg tab entry: 0x5a001
+pde pos 0x3c0
+env setup vm done
+####memset
+####memset done
+####1
+e_addr 0xf01c6000, env free 0xf01ddfa0
+####2
+####3
+[00000000] new env 00001000
+####4
+env alloc done. new_env: 0xf01c6000
+entry 0x800020, phoff 0x34, phnum 0x4
+p_type 0x1, p_offset 0x1000, p_va 0x200000, p_filesz 0x31be
+p_memsz 0x31be, p_flags 0x4, p_align 0x1000
+p_va 0x200000
+needed page number 0x4
+alloc page table p addr: 0x59000
+alloc page table p addr: 0x58000
+finish
+p_type 0x1, p_offset 0x5020, p_va 0x800020, p_filesz 0x1028
+p_memsz 0x1028, p_flags 0x5, p_align 0x1000
+p_va 0x800020
+needed page number 0x2
+alloc page table p addr: 0x53000
+alloc page table p addr: 0x52000
+finish
+p_type 0x1, p_offset 0x7000, p_va 0x802000, p_filesz 0x2c
+p_memsz 0x30, p_flags 0x6, p_align 0x1000
+p_va 0x802000
+needed page number 0x1
+finish
+p_type 0x6474e551, p_offset 0x0, p_va 0x0, p_filesz 0x0
+p_memsz 0x0, p_flags 0x7, p_align 0x10
+non load segment
+alloc stack
+alloc page table p addr: 0x4e000
+alloc stack done
+load icode done
+env run 
+gogogo
+EAX=00000000 EBX=00802000 ECX=00000000 EDX=00000000
+ESI=00000000 EDI=00000000 EBP=eebfdfe8 ESP=eebfdfcc
+EIP=00800033 EFL=00000096 [--S-AP-] CPL=3 II=0 A20=1 SMM=0 HLT=0
+ES =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
+CS =001b 00000000 ffffffff 00cffa00 DPL=3 CS32 [-R-]
+SS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
+DS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
+FS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
+GS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
+LDT=0000 00000000 00000000 00008200 DPL=0 LDT
+TR =0028 f01843c0 00000067 00408900 DPL=0 TSS32-avl
+GDT=     f011e300 0000002f
+IDT=     f0183ba0 000007ff
+CR0=80050033 CR2=effffffc CR3=0005c000 CR4=00000000
+DR0=00000000 DR1=00000000 DR2=00000000 DR3=00000000 
+DR6=ffff0ff0 DR7=00000400
+EFER=0000000000000000
+Triple fault.  Halting for inspection via QEMU monitor.
+qemu: terminating on signal 15 from pid 28107
