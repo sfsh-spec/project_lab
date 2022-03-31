@@ -6,6 +6,7 @@
 
 
 
+
 ###################################################################
 # exceptions/interrupts
 ###################################################################
@@ -72,6 +73,10 @@ TRAPHANDLER_NOEC(t_default, T_DEFAULT)
  * Lab 3: Your code here for _alltraps
  */
  _alltraps:
+	pushw $0   /*tf_padding2*/
+	pushw %ds
+	pushw $0   /*tf_padding1*/
+	pushw %es
 	pushal
 	movw $(GD_KD), %ax
 	movw %ax, %ds

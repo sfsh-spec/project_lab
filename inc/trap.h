@@ -75,6 +75,8 @@ struct Trapframe {
 } __attribute__((packed));
 
 
+void
+divide_error_handler(struct Trapframe *tf);
 #endif /* !__ASSEMBLER__ */
 
 #endif /* !JOS_INC_TRAP_H */

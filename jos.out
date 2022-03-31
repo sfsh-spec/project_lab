@@ -180,6 +180,8 @@ check_page_free_list() succeeded!
 alloc page table p addr: 0x5c000
 check_page_installed_pgdir() succeeded!
 env init done
+trap init
+divide handle addr 0xf0104bf6
 trap init done
 user pgdir: 0xf005c000
 b map  va:0xf0000000 pa: 0x0 size: 0x400000
@@ -224,22 +226,30 @@ alloc stack done
 load icode done
 env run 
 gogogo
-EAX=00000000 EBX=00000000 ECX=00000064 EDX=f010000c
-ESI=00000000 EDI=00000000 EBP=eebfdfa8 ESP=eebfdf9c
-EIP=008000da EFL=00000016 [----AP-] CPL=3 II=0 A20=1 SMM=0 HLT=0
-ES =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-CS =001b 00000000 ffffffff 00cffa00 DPL=3 CS32 [-R-]
-SS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-DS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-FS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-GS =0023 00000000 ffffffff 00cff300 DPL=3 DS   [-WA]
-LDT=0000 00000000 00000000 00008200 DPL=0 LDT
-TR =0028 f01843c0 00000067 00408900 DPL=0 TSS32-avl
-GDT=     f011e300 0000002f
-IDT=     f0183ba0 000007ff
-CR0=80050033 CR2=effffffc CR3=0005c000 CR4=00000000
-DR0=00000000 DR1=00000000 DR2=00000000 DR3=00000000 
-DR6=ffff0ff0 DR7=00000400
-EFER=0000000000000000
-Triple fault.  Halting for inspection via QEMU monitor.
-qemu: terminating on signal 15 from pid 28627
+Incoming TRAP frame at 0xefffffbc
+Trap frame at 0xf01c6000
+  trap 0x0000000d General Protection
+TRAP frame at 0xf01c6000
+  edi  0x00000000
+  esi  0x00000000
+  ebp  0xeebfdfa8
+  oesp 0xefffffdc
+  ebx  0x00000000
+  edx  0xf010000c
+  ecx  0x00000064
+  eax  0x00000000
+  es   0x----0023
+  ds   0x----0023
+  trap 0x0000000d General Protection
+  err  0x00000182
+  eip  0x008000da
+  cs   0x----001b
+  flag 0x00000016
+  esp  0xeebfdf9c
+  ss   0x----0023
+[00001000] free env 00001000
+Destroyed the only environment - nothing more to do!
+Welcome to the JOS kernel monitor!
+Type 'help' for a list of commands.
+test: 43981 abcd
+qemu: terminating on signal 15 from pid 44323

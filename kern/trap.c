@@ -186,7 +186,20 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	u32 trap_num = tf->tf_trapno;
+	const char *t_name = trapname(trap_num);
+	cprintf("Trap frame at %p\n", tf);
+	cprintf("  trap 0x%08x %s\n", trap_num, t_name);
+	switch (trap_num)
+	{
+		case T_DIVIDE:
+			divide_error_handler(tf);
+			//return;
+		
+		default:
+			break;
 
+	}
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
@@ -226,7 +239,7 @@ trap(struct Trapframe *tf)
 	// Record that tf is the last real trapframe so
 	// print_trapframe can print some additional information.
 	last_tf = tf;
-
+	//cprintf("")
 	// Dispatch based on what type of trap occurred
 	trap_dispatch(tf);
 
@@ -258,3 +271,8 @@ page_fault_handler(struct Trapframe *tf)
 	env_destroy(curenv);
 }
 
+void
+divide_error_handler(struct Trapframe *tf)
+{
+
+}
