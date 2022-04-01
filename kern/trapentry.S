@@ -10,7 +10,7 @@
 ###################################################################
 # exceptions/interrupts
 ###################################################################
-
+#define IDT_SIZE  2048
 /* TRAPHANDLER defines a globally-visible function for handling a trap.
  * It pushes a trap number onto the stack, then jumps to _alltraps.
  * Use TRAPHANDLER for traps where the CPU automatically pushes an error code.
@@ -42,6 +42,23 @@
 	pushl $(num);							\
 	jmp _alltraps
 
+#define TRAPHANDLER_E(base, count)          \
+	.type init_idt, @function;           \
+init_idt:
+	mov $(base), %esi;          \
+	mov $(intr_table), %edi;     \  
+	mov $0, %ecx;                \
+load_idte:                       \
+	lea (%esi, %ecx, 4), %eax;    \
+	mov $0x80000, %ebx;           \
+	mov $0xaf00,  %edx;              \
+	mov %al, %bl;              \
+	mov %ah, %dh;                 \
+	mov %ebx, (%edi,%ecx,8);       \
+	mov %edx, 4(%edi,%ecx,8);          \
+	add $1, %ecx;            \
+	cmp %ecx, $count;        \
+	jnz load_idte
 .text
 
 /*
@@ -56,11 +73,14 @@ TRAPHANDLER_NOEC(t_bound, T_BOUND)
 TRAPHANDLER_NOEC(t_illop, T_ILLOP)
 TRAPHANDLER_NOEC(t_device, T_DEVICE)
 TRAPHANDLER(t_dblflt, T_DBLFLT)
+TRAPHANDLER(t_rsvd1, 9)
+
 TRAPHANDLER(t_tss, T_TSS)
 TRAPHANDLER(t_segnp, T_SEGNP)
 TRAPHANDLER(t_stack, T_STACK)
 TRAPHANDLER(t_gpflt, T_GPFLT)
 TRAPHANDLER(t_pgflt, T_PGFLT)
+TRAPHANDLER(t_rsvd2, 15)
 TRAPHANDLER_NOEC(t_fperr, T_FPERR)
 TRAPHANDLER(t_align, T_ALIGN)
 TRAPHANDLER_NOEC(t_mchk, T_MCHK)
@@ -69,6 +89,7 @@ TRAPHANDLER_NOEC(t_simderr, T_SIMDERR)
 TRAPHANDLER_NOEC(t_syscall, T_SYSCALL)
 TRAPHANDLER_NOEC(t_default, T_DEFAULT)
 
+TRAPHANDLER_E(t_divide, 20)
 /*
  * Lab 3: Your code here for _alltraps
  */
@@ -83,3 +104,8 @@ TRAPHANDLER_NOEC(t_default, T_DEFAULT)
 	movw %ax, %es
 	pushl %esp
 	call trap
+
+.data
+	.global    intr_table
+intr_table:
+	.space    IDT_SIZE

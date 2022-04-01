@@ -87,7 +87,7 @@ trap_init(void)
 	extern void t_default();
 	cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
-	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 0)
+	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
 	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
 	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 1)
 	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 1)

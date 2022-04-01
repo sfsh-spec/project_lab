@@ -252,4 +252,4 @@ Destroyed the only environment - nothing more to do!
 Welcome to the JOS kernel monitor!
 Type 'help' for a list of commands.
 test: 43981 abcd
-qemu: terminating on signal 15 from pid 44323
+qemu: terminating on signal 15 from pid 8578
