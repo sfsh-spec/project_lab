@@ -17,13 +17,13 @@ static struct Taskstate ts;
  * additional information in the latter case.
  */
 static struct Trapframe *last_tf;
-
+extern struct Gatedesc intr_table[];
 /* Interrupt descriptor table.  (Must be built at run time because
  * shifted function addresses can't be represented in relocation records.)
  */
 struct Gatedesc idt[256] = { { 0 } };
 struct Pseudodesc idt_pd = {
-	sizeof(idt) - 1, (uint32_t) idt
+	sizeof(idt) - 1, (uint32_t) intr_table
 };
 
 
@@ -64,6 +64,9 @@ void
 trap_init(void)
 {
 	cprintf("trap init\n");
+	extern void init_idt();
+	init_idt();
+	/*
 	extern struct Segdesc gdt[];
 	extern void t_divide();
 	extern void t_debug();
@@ -107,7 +110,7 @@ trap_init(void)
 	SETGATE(idt[T_SIMDERR], 1, GD_KT, t_simderr, 1)
 	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 1)
 	SETGATE(idt[T_DEFAULT], 1, GD_KT, t_default, 1)
-
+*/
 	// Per-CPU setup 
 	trap_init_percpu();
 }

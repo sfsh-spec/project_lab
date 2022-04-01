@@ -43,10 +43,11 @@
 	jmp _alltraps
 
 #define TRAPHANDLER_E(base, count)          \
+	.global init_idt
 	.type init_idt, @function;           \
 init_idt:
 	mov $(base), %esi;          \
-	mov $(intr_table), %edi;     \  
+	mov $(intr_table), %edi;     \
 	mov $0, %ecx;                \
 load_idte:                       \
 	lea (%esi, %ecx, 4), %eax;    \
@@ -57,13 +58,14 @@ load_idte:                       \
 	mov %ebx, (%edi,%ecx,8);       \
 	mov %edx, 4(%edi,%ecx,8);          \
 	add $1, %ecx;            \
-	cmp %ecx, $count;        \
+	cmp $20, %ecx;        \
 	jnz load_idte
 .text
 
 /*
  * Lab 3: Your code here for generating entry points for the different traps.
  */
+base:
 TRAPHANDLER_NOEC(t_divide, T_DIVIDE)
 TRAPHANDLER_NOEC(t_debug, T_DEBUG)
 TRAPHANDLER_NOEC(t_nmi, T_NMI)
@@ -104,6 +106,7 @@ TRAPHANDLER_E(t_divide, 20)
 	movw %ax, %es
 	pushl %esp
 	call trap
+
 
 .data
 	.global    intr_table
