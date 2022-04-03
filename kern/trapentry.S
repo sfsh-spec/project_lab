@@ -46,20 +46,23 @@
 	.global init_idt
 	.type init_idt, @function;           \
 init_idt:
+	push %ebp;                  \
+	mov %esp, %ebp;          \
 	mov $(base), %esi;          \
 	mov $(intr_table), %edi;     \
 	mov $0, %ecx;                \
+	mov $0xf010af00,  %edx;              \
 load_idte:                       \
 	lea (%esi, %ecx, 4), %eax;    \
 	mov $0x80000, %ebx;           \
-	mov $0xaf00,  %edx;              \
-	mov %al, %bl;              \
-	mov %ah, %dh;                 \
+	mov %ax, %bx;              \
 	mov %ebx, (%edi,%ecx,8);       \
 	mov %edx, 4(%edi,%ecx,8);          \
 	add $1, %ecx;            \
 	cmp $20, %ecx;        \
-	jnz load_idte
+	jnz load_idte;             \
+	leave;            \
+	ret
 .text
 
 /*
