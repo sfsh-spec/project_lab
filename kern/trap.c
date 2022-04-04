@@ -65,6 +65,7 @@ trap_init(void)
 {
 	cprintf("trap init\n");
 	extern void init_idt();
+	cprintf("#####idt addr 0x%x\n", (uint32_t)intr_table);	
 	init_idt();
 	/*
 	extern struct Segdesc gdt[];
