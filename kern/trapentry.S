@@ -46,28 +46,27 @@
 	.global init_idt
 	.type init_idt, @function;           \
 init_idt:
-	push %ebp;                  \
-	mov %esp, %ebp;          \
 	mov $(base), %esi;          \
 	mov $(intr_table), %edi;     \
 	mov $0, %ecx;                \
-	mov $0xf010af00,  %edx;              \
 load_idte:                       \
 	lea (%esi, %ecx, 4), %eax;    \
+	lea (%ecx, %ecx, 1), %edx;    \
+	add %edx, %eax; \
 	mov $0x80000, %ebx;           \
 	mov %ax, %bx;              \
 	mov %ebx, (%edi,%ecx,8);       \
-	mov %edx, 4(%edi,%ecx,8);          \
+	mov $0xf010af00, 4(%edi,%ecx,8);          \
 	add $1, %ecx;            \
 	cmp $20, %ecx;        \
 	jnz load_idte;             \
-	leave;            \
 	ret
 .text
 
 /*
  * Lab 3: Your code here for generating entry points for the different traps.
  */
+.align 2
 base:
 TRAPHANDLER_NOEC(t_divide, T_DIVIDE)
 TRAPHANDLER_NOEC(t_debug, T_DEBUG)
@@ -113,5 +112,6 @@ TRAPHANDLER_E(t_divide, 20)
 
 .data
 	.global    intr_table
+.align 2
 intr_table:
 	.space    IDT_SIZE
