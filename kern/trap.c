@@ -87,10 +87,10 @@ trap_init(void)
 	extern void t_default();
 	cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
-	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 0)
+	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
 	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
 	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 1)
-	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 1)
+	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 3)
 	SETGATE(idt[T_OFLOW], 1, GD_KT, t_oflow, 1)
 	SETGATE(idt[T_BOUND], 1, GD_KT, t_bound, 1)
 	SETGATE(idt[T_ILLOP], 1, GD_KT, t_illop, 1)
@@ -190,12 +190,22 @@ trap_dispatch(struct Trapframe *tf)
 	const char *t_name = trapname(trap_num);
 	cprintf("Trap frame at %p\n", tf);
 	cprintf("  trap 0x%08x %s\n", trap_num, t_name);
+	print_trapframe(tf);
+	
 	switch (trap_num)
 	{
 		case T_DIVIDE:
 			divide_error_handler(tf);
-			//return;
+			break;
 		
+		case T_PGFLT:
+			page_fault_handler(tf);
+			break;
+		
+		case T_BRKPT:
+			monitor(tf);
+			break;
+
 		default:
 			break;
 

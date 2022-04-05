@@ -404,7 +404,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 			{	
 				pg->pp_ref++;
 				pgdir[PDX(va)] = page2pa(pg)|PTE_P;
-				cprintf("alloc pg tab entry: 0x%x\n", page2pa(pg)|PTE_P);
+				// cprintf("alloc pg tab entry: 0x%x\n", page2pa(pg)|PTE_P);
 				return  (pte_t*)(KADDR(page2pa(pg))) + PTX(va);
 			}
 			else
@@ -448,7 +448,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 			pt_entry = pgdir_walk(pgdir, (uintptr_t*)va+PGSIZE*i/4, 1);
 			j = 0;
 			pgdir[PDX(va+PGSIZE*i)] |= perm;
-			cprintf("pde pos 0x%x\n", PDX(va+PGSIZE*i));
+			// cprintf("pde pos 0x%x\n", PDX(va+PGSIZE*i));
 		}
 		*(pt_entry+j) = (pa+i*PGSIZE) | perm | PTE_P;
 		j++;
