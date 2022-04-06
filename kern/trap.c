@@ -105,7 +105,7 @@ trap_init(void)
 	SETGATE(idt[T_ALIGN], 1, GD_KT, t_align, 1)
 	SETGATE(idt[T_MCHK], 1, GD_KT, t_mchk, 1)
 	SETGATE(idt[T_SIMDERR], 1, GD_KT, t_simderr, 1)
-	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 1)
+	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 3)
 	SETGATE(idt[T_DEFAULT], 1, GD_KT, t_default, 1)
 
 	// Per-CPU setup 
@@ -204,6 +204,12 @@ trap_dispatch(struct Trapframe *tf)
 		
 		case T_BRKPT:
 			monitor(tf);
+			break;
+		
+		case T_SYSCALL:
+			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
+				tf->tf_regs.reg_ebp, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+			tf->tf_regs.reg_eax = ret;
 			break;
 
 		default:
