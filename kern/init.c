@@ -34,6 +34,7 @@ i386_init(void)
 	mem_init();
 	// cprintf("why is make warning\n");
 	// Lab 3 user environment initialization functions
+	cprintf("struct Env size %d\n", sizeof(struct Env));
 	env_init();
 	cprintf("env init done\n");
 	trap_init();
@@ -44,7 +45,7 @@ i386_init(void)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(user_hello, ENV_TYPE_USER);
+	ENV_CREATE(user_testbss, ENV_TYPE_USER);
 #endif // TEST*
 
 	cprintf("env run \n");

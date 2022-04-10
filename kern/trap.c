@@ -190,26 +190,30 @@ trap_dispatch(struct Trapframe *tf)
 	const char *t_name = trapname(trap_num);
 	cprintf("Trap frame at %p\n", tf);
 	cprintf("  trap 0x%08x %s\n", trap_num, t_name);
-	print_trapframe(tf);
+	// print_trapframe(tf);
 	
 	switch (trap_num)
 	{
 		case T_DIVIDE:
 			divide_error_handler(tf);
+			// return;
 			break;
 		
 		case T_PGFLT:
 			page_fault_handler(tf);
+			return;
 			break;
 		
 		case T_BRKPT:
 			monitor(tf);
+			return;
 			break;
 		
 		case T_SYSCALL:
 			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 				tf->tf_regs.reg_ebp, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret;
+			return;
 			break;
 
 		default:
@@ -276,7 +280,9 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
-
+	u32 mode = tf->tf_cs & 0x3;
+	if (mode == 0)
+		panic("kernel mode panic. fault_va: 0x%x\n", fault_va);
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
 

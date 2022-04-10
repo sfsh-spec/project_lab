@@ -248,9 +248,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// to prevent the register values
 	// of a prior environment inhabiting this Env structure
 	// from "leaking" into our new environment.
-	cprintf("####memset\n");
+	// cprintf("####memset\n");
 	memset(&e->env_tf, 0, sizeof(e->env_tf));
-	cprintf("####memset done\n");
+	// cprintf("####memset done\n");
 
 	// Set up appropriate initial values for the segment registers.
 	// GD_UD is the user data segment selector in the GDT, and
@@ -268,16 +268,16 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// You will set e->env_tf.tf_eip later.
 
 	// commit the allocation
-	cprintf("####1\n");
+	// cprintf("####1\n");
 	env_free_list = e->env_link;
 	cprintf("e_addr 0x%x, env free 0x%x\n", (u32)e, (u32)env_free_list);
-	cprintf("####2\n");
+	// cprintf("####2\n");
 
 	*newenv_store = e;
-	cprintf("####3\n");
+	// cprintf("####3\n");
 
 	cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
-	cprintf("####4\n");
+	// cprintf("####4\n");
 	
 	return 0;
 }
@@ -401,7 +401,7 @@ load_icode(struct Env *e, uint8_t *binary)
 			page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
 		}
 		cprintf("finish\n");
-		memcpy((uint8_t*)temp->p_va, (uint8_t*)elf_ptr + temp->p_offset, temp->p_memsz);
+		memcpy((uint8_t*)temp->p_va, (uint8_t*)elf_ptr + temp->p_offset, temp->p_filesz);
 		// cprintf("round 0x%x\n", (u32)temp);
 	}
 	// Now map one page for the program's initial stack
@@ -561,7 +561,7 @@ env_run(struct Env *e)
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
 	lcr3(PADDR(e->env_pgdir));
-	cprintf("gogogo\n");
+	// cprintf("gogogo\n");
 	env_pop_tf(&e->env_tf);
 	// panic("env_run not yet implemented");
 }

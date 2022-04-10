@@ -198,8 +198,8 @@ mem_init(void)
 	//    - the new image at UENVS  -- kernel R, user R
 	//    - envs itself -- kernel RW, user NONE
 	// LAB 3: Your code here.	
-	boot_map_region(kern_pgdir, UENVS, 1*PGSIZE, PADDR(envs), PTE_P|PTE_W);
-	boot_map_region(kern_pgdir, UENVS+1*PGSIZE, PTSIZE-1*PGSIZE, PADDR(envs)+PGSIZE, PTE_P);
+	boot_map_region(kern_pgdir, UENVS, 100*PGSIZE, PADDR(envs), PTE_P|PTE_U);
+	boot_map_region(kern_pgdir, UENVS+100*PGSIZE, PTSIZE-100*PGSIZE, PADDR(envs)+100*PGSIZE, PTE_P);
 		
 			
 			
@@ -613,7 +613,48 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
+	u32 vaddr = (u32)va;
+	pte_t* temp = NULL;
+	u32 up = ROUNDUP(vaddr + len, PGSIZE);
+	u32 *pgdir = env->env_pgdir;
+	if (vaddr >= ULIM)
+	{
 
+		user_mem_check_addr = vaddr;
+		return -E_FAULT;
+	}
+	
+	if ((temp = pgdir_walk(pgdir, va, 0)) == NULL)
+	{	
+		user_mem_check_addr = vaddr;
+
+		return -E_FAULT;
+	}
+	else if ((*temp & 0x7) < perm)
+	{	
+		user_mem_check_addr = vaddr;
+		return -E_FAULT;
+	}
+	for (u32 i = ROUNDDOWN(vaddr, PGSIZE)+PGSIZE; i< up; i += PGSIZE)
+	{
+		if (i >= ULIM)
+		{
+			user_mem_check_addr = i;
+			return -E_FAULT;
+		}
+		temp = pgdir_walk(pgdir, (const void *)i, 0);
+		if (!temp)
+		{
+			user_mem_check_addr = i;
+			return -E_FAULT;
+		}
+		else if ((*temp & 0x7) < perm)
+		{
+			user_mem_check_addr = i;
+			return -E_FAULT;
+		}
+	}
+	
 	return 0;
 }
 

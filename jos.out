@@ -43,7 +43,7 @@ alloc page table p addr: 0x5c000
 check_page_installed_pgdir() succeeded!
 env init done
 trap init
-divide handle addr 0xf0104c00
+divide handle addr 0xf0104c44
 trap init done
 user pgdir: 0xf005c000
 b map  va:0xf0000000 pa: 0x0 size: 0x400000
@@ -85,49 +85,16 @@ alloc page table p addr: 0x4e000
 alloc stack done
 load icode done
 env run 
-gogogo
 Incoming TRAP frame at 0xefffffbc
 Trap frame at 0xf01c6000
-  trap 0x0000000d General Protection
-TRAP frame at 0xf01c6000
-  edi  0x00000000
-  esi  0x00000000
-  ebp  0xeebfdfa8
-  oesp 0xefffffdc
-  ebx  0x00000000
-  edx  0xf010000c
-  ecx  0x00000064
-  eax  0x00000000
-  es   0x----0023
-  ds   0x----0023
-  trap 0x0000000d General Protection
-  err  0x00000182
-  eip  0x008000da
-  cs   0x----001b
-  flag 0x00000016
-  esp  0xeebfdf9c
-  ss   0x----0023
-TRAP frame at 0xf01c6000
-  edi  0x00000000
-  esi  0x00000000
-  ebp  0xeebfdfa8
-  oesp 0xefffffdc
-  ebx  0x00000000
-  edx  0xf010000c
-  ecx  0x00000064
-  eax  0x00000000
-  es   0x----0023
-  ds   0x----0023
-  trap 0x0000000d General Protection
-  err  0x00000182
-  eip  0x008000da
-  cs   0x----001b
-  flag 0x00000016
-  esp  0xeebfdf9c
-  ss   0x----0023
+  trap 0x00000030 System call
+f«rIncoming TRAP frame at 0xefffffbc
+Trap frame at 0xf01c6000
+  trap 0x00000030 System call
+[00001000] exiting gracefully
 [00001000] free env 00001000
 Destroyed the only environment - nothing more to do!
 Welcome to the JOS kernel monitor!
 Type 'help' for a list of commands.
 test: 43981 abcd
-qemu: terminating on signal 15 from pid 5171
+qemu: terminating on signal 15 from pid 17621
