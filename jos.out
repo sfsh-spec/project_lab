@@ -1,18 +1,18 @@
 + ld obj/kern/kernel
 ld: warning: section `.bss' type changed to PROGBITS
 + mk obj/kern/kernel.img
-6828 decimal is XXX octal!
-######stk top 0xf011d000
+6828 decimal is 15254 octal!
+######stk top 0xf011e000
 Physical memory: 131072K available, base = 640K, extended = 130432K
-###end 0xf0184840
-###first free 0xf0185000
-bootstack_addr: 0xf0115000
-kern_pgdir addr: 0xf0185000
-pp1: 0xf01864f8 pp2: 0xf01c5ff8
-pp1 next 0xf01864f0
+###end 0xf0185840
+###first free 0xf0186000
+bootstack_addr: 0xf0116000
+kern_pgdir addr: 0xf0186000
+pp1: 0xf01874f8 pp2: 0xf01c6ff8
+pp1 next 0xf01874f0
 low memory finish
-pfl 0xf01864f8
-pfl_next 0xf01864f0
+pfl 0xf01874f8
+pfl_next 0xf01874f0
 check_page_free_list() succeeded!
 none free page
 none free page
@@ -27,46 +27,41 @@ none free page
 alloc fail
 none free page
 check_page() succeeded!
-b map  va:0xef000000 pa: 0x186000 size: 0x40000
-b map  va:0xef040000 pa: 0x1c6000 size: 0x3c0000
-b map  va:0xeec00000 pa: 0x1c6000 size: 0x1000
-b map  va:0xeec01000 pa: 0x1c7000 size: 0x3ff000
-b map  va:0xefff8000 pa: 0x115000 size: 0x8000
+b map  va:0xef000000 pa: 0x187000 size: 0x40000
+b map  va:0xef040000 pa: 0x1c7000 size: 0x3c0000
+b map  va:0xeec00000 pa: 0x1c7000 size: 0x64000
+b map  va:0xeec64000 pa: 0x22b000 size: 0x39c000
+b map  va:0xefff8000 pa: 0x116000 size: 0x8000
 b map  va:0xf0000000 pa: 0x0 size: 0x10000000
 gogogo
 check_kern_pgdir() succeeded!
 low memory finish
-pfl 0xf01862e0
-pfl_next 0xf01862d8
+pfl 0xf01872e0
+pfl_next 0xf01872d8
 check_page_free_list() succeeded!
 alloc page table p addr: 0x5c000
 check_page_installed_pgdir() succeeded!
+struct Env size 96
 env init done
 trap init
-divide handle addr 0xf0104c44
+divide handle addr 0xf0104d74
 trap init done
 user pgdir: 0xf005c000
 b map  va:0xf0000000 pa: 0x0 size: 0x400000
 env setup vm done
-####memset
-####memset done
-####1
-e_addr 0xf01c6000, env free 0xf01ddfa0
-####2
-####3
+e_addr 0xf01c7000, env free 0xf01defa0
 [00000000] new env 00001000
-####4
-env alloc done. new_env: 0xf01c6000
+env alloc done. new_env: 0xf01c7000
 entry 0x800020, phoff 0x34, phnum 0x4
-p_type 0x1, p_offset 0x1000, p_va 0x200000, p_filesz 0x3227
-p_memsz 0x3227, p_flags 0x4, p_align 0x1000
+p_type 0x1, p_offset 0x1000, p_va 0x200000, p_filesz 0x329f
+p_memsz 0x329f, p_flags 0x4, p_align 0x1000
 p_va 0x200000
 needed page number 0x4
 alloc page table p addr: 0x59000
 alloc page table p addr: 0x58000
 finish
-p_type 0x1, p_offset 0x5020, p_va 0x800020, p_filesz 0x1058
-p_memsz 0x1058, p_flags 0x5, p_align 0x1000
+p_type 0x1, p_offset 0x5020, p_va 0x800020, p_filesz 0x10a8
+p_memsz 0x10a8, p_flags 0x5, p_align 0x1000
 p_va 0x800020
 needed page number 0x2
 alloc page table p addr: 0x53000
@@ -86,15 +81,15 @@ alloc stack done
 load icode done
 env run 
 Incoming TRAP frame at 0xefffffbc
-Trap frame at 0xf01c6000
+Trap frame at 0xf01c7000
   trap 0x00000030 System call
-f«rIncoming TRAP frame at 0xefffffbc
-Trap frame at 0xf01c6000
+Incoming TRAP frame at 0xefffffbc
+Trap frame at 0xf01c7000
   trap 0x00000030 System call
-[00001000] exiting gracefully
+[00001000] user_mem_check assertion failure for va f010000c
 [00001000] free env 00001000
 Destroyed the only environment - nothing more to do!
 Welcome to the JOS kernel monitor!
 Type 'help' for a list of commands.
 test: 43981 abcd
-qemu: terminating on signal 15 from pid 17621
+qemu: terminating on signal 15 from pid 39627

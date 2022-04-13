@@ -20,7 +20,7 @@ extern pde_t *kern_pgdir;
 //unit is 4K
 #define PAGE_START   1   //for page_init
 #define PAGES_SIZE   64  //128M total memory size, page size: 4K, entry size of a page: 8B 
-#define ENVS_SIZE    1//envs_size = NENV * sizeof(struct Env) / PGSIZE = 2240 < 4K 
+#define ENVS_SIZE    24  //envs_size = NENV * sizeof(struct Env) / PGSIZE = 24 
 
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --

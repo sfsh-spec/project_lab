@@ -89,9 +89,9 @@ trap_init(void)
 	// LAB 3: Your code here.
 	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
 	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
-	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 1)
+	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 3)
 	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 3)
-	SETGATE(idt[T_OFLOW], 1, GD_KT, t_oflow, 1)
+	SETGATE(idt[T_OFLOW], 1, GD_KT, t_oflow, 3)
 	SETGATE(idt[T_BOUND], 1, GD_KT, t_bound, 1)
 	SETGATE(idt[T_ILLOP], 1, GD_KT, t_illop, 1)
 	SETGATE(idt[T_DEVICE], 1, GD_KT, t_device, 1)
@@ -100,7 +100,7 @@ trap_init(void)
 	SETGATE(idt[T_SEGNP], 1, GD_KT, t_segnp, 1)
 	SETGATE(idt[T_STACK], 1, GD_KT, t_stack, 1)
 	SETGATE(idt[T_GPFLT], 1, GD_KT, t_gpflt, 1)
-	SETGATE(idt[T_PGFLT], 1, GD_KT, t_pgflt, 1)
+	SETGATE(idt[T_PGFLT], 1, GD_KT, t_pgflt, 3)
 	SETGATE(idt[T_FPERR], 1, GD_KT, t_fperr, 1)
 	SETGATE(idt[T_ALIGN], 1, GD_KT, t_align, 1)
 	SETGATE(idt[T_MCHK], 1, GD_KT, t_mchk, 1)
@@ -202,19 +202,16 @@ trap_dispatch(struct Trapframe *tf)
 		case T_PGFLT:
 			page_fault_handler(tf);
 			return;
-			break;
 		
 		case T_BRKPT:
 			monitor(tf);
 			return;
-			break;
 		
 		case T_SYSCALL:
 			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 				tf->tf_regs.reg_ebp, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret;
 			return;
-			break;
 
 		default:
 			break;

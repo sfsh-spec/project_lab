@@ -198,8 +198,8 @@ mem_init(void)
 	//    - the new image at UENVS  -- kernel R, user R
 	//    - envs itself -- kernel RW, user NONE
 	// LAB 3: Your code here.	
-	boot_map_region(kern_pgdir, UENVS, 100*PGSIZE, PADDR(envs), PTE_P|PTE_U);
-	boot_map_region(kern_pgdir, UENVS+100*PGSIZE, PTSIZE-100*PGSIZE, PADDR(envs)+100*PGSIZE, PTE_P);
+	boot_map_region(kern_pgdir, UENVS, 24*PGSIZE, PADDR(envs), PTE_P|PTE_U);
+	boot_map_region(kern_pgdir, UENVS+24*PGSIZE, PTSIZE-24*PGSIZE, PADDR(envs)+24*PGSIZE, PTE_P);
 		
 			
 			
