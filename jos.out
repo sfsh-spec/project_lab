@@ -29,8 +29,8 @@ none free page
 check_page() succeeded!
 b map  va:0xef000000 pa: 0x187000 size: 0x40000
 b map  va:0xef040000 pa: 0x1c7000 size: 0x3c0000
-b map  va:0xeec00000 pa: 0x1c7000 size: 0x64000
-b map  va:0xeec64000 pa: 0x22b000 size: 0x39c000
+b map  va:0xeec00000 pa: 0x1c7000 size: 0x18000
+b map  va:0xeec18000 pa: 0x1df000 size: 0x3e8000
 b map  va:0xefff8000 pa: 0x116000 size: 0x8000
 b map  va:0xf0000000 pa: 0x0 size: 0x10000000
 gogogo
@@ -44,7 +44,7 @@ check_page_installed_pgdir() succeeded!
 struct Env size 96
 env init done
 trap init
-divide handle addr 0xf0104d74
+divide handle addr 0xf0104e1e
 trap init done
 user pgdir: 0xf005c000
 b map  va:0xf0000000 pa: 0x0 size: 0x400000
@@ -58,14 +58,12 @@ p_memsz 0x329f, p_flags 0x4, p_align 0x1000
 p_va 0x200000
 needed page number 0x4
 alloc page table p addr: 0x59000
-alloc page table p addr: 0x58000
 finish
 p_type 0x1, p_offset 0x5020, p_va 0x800020, p_filesz 0x10a8
 p_memsz 0x10a8, p_flags 0x5, p_align 0x1000
 p_va 0x800020
 needed page number 0x2
-alloc page table p addr: 0x53000
-alloc page table p addr: 0x52000
+alloc page table p addr: 0x54000
 finish
 p_type 0x1, p_offset 0x7000, p_va 0x802000, p_filesz 0x2c
 p_memsz 0x30, p_flags 0x6, p_align 0x1000
@@ -76,20 +74,24 @@ p_type 0x6474e551, p_offset 0x0, p_va 0x0, p_filesz 0x0
 p_memsz 0x0, p_flags 0x7, p_align 0x10
 non load segment
 alloc stack
-alloc page table p addr: 0x4e000
+alloc page table p addr: 0x50000
 alloc stack done
 load icode done
 env run 
 Incoming TRAP frame at 0xefffffbc
 Trap frame at 0xf01c7000
   trap 0x00000030 System call
+syscall num: 0x2
+a1: 0x0 a2:0x0 a3: 0xeebfdfc8
 Incoming TRAP frame at 0xefffffbc
 Trap frame at 0xf01c7000
   trap 0x00000030 System call
+syscall num: 0x0
+a1: 0xf010000c a2:0x64 a3: 0xeebfdf98
 [00001000] user_mem_check assertion failure for va f010000c
 [00001000] free env 00001000
 Destroyed the only environment - nothing more to do!
 Welcome to the JOS kernel monitor!
 Type 'help' for a list of commands.
 test: 43981 abcd
-qemu: terminating on signal 15 from pid 39627
+qemu: terminating on signal 15 from pid 60949

@@ -20,7 +20,7 @@ struct PageInfo *pages;		// Physical page state array
 static struct PageInfo *page_free_list;	// Free list of physical pages
 
 // struct PageInfo arr[2];
-// struct PageInfo *test_ptr = (struct PageInfo*)(0);
+struct PageInfo *free_list_debug;
 // --------------------------------------------------------------
 // Detect machine's physical memory setup.
 // --------------------------------------------------------------
@@ -324,6 +324,7 @@ page_alloc(int alloc_flags)
 	//cprintf("page_free_list before: 0x%x\n", (int)page_free_list);
 	struct PageInfo *alloc_page = page_free_list;
 	page_free_list = page_free_list->pp_link;
+	free_list_debug = page_free_list; //for debug
 	alloc_page->pp_ref = 0;
 	alloc_page->pp_link = NULL;
 	//cprintf("page_free_list after: 0x%x\n", (int)page_free_list);
@@ -348,6 +349,7 @@ page_free(struct PageInfo *pp)
 			panic("nonzero pp_ref or illegal pp_link");
 	pp->pp_link = page_free_list;
 	page_free_list = pp; 
+	free_list_debug = page_free_list; //for debug
 	// cprintf("page free p address: 0x%x\n", page2pa(pp));
 }
 
@@ -614,7 +616,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
 	u32 vaddr = (u32)va;
-	pte_t* temp = NULL;
+	pte_t temp = 0;
 	u32 up = ROUNDUP(vaddr + len, PGSIZE);
 	u32 *pgdir = env->env_pgdir;
 	if (vaddr >= ULIM)
@@ -623,32 +625,39 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 		user_mem_check_addr = vaddr;
 		return -E_FAULT;
 	}
-	
-	if ((temp = pgdir_walk(pgdir, va, 0)) == NULL)
+	u32 *uvpt = (u32 *)UVPT;
+	// temp = pgdir_walk(pgdir, va, 0);
+	cprintf("###va: 0x%x\n", (u32)va);
+	temp = env->env_pgdir[PDX(vaddr)];
+	cprintf("###temp: 0x%x\n", (u32)temp);
+	cprintf("uvpt: 0x%x\n", uvpt[(vaddr >> PGSHIFT)]);
+	if ((temp & PTE_P) == 0)
 	{	
 		user_mem_check_addr = vaddr;
 
 		return -E_FAULT;
 	}
-	else if ((*temp & 0x7) < perm)
+	else if ((uvpt[(vaddr >> PGSHIFT)] & 0x7) < perm)
 	{	
 		user_mem_check_addr = vaddr;
 		return -E_FAULT;
 	}
+
 	for (u32 i = ROUNDDOWN(vaddr, PGSIZE)+PGSIZE; i< up; i += PGSIZE)
 	{
+		cprintf("###check addr: 0x%x\n", i);
 		if (i >= ULIM)
 		{
 			user_mem_check_addr = i;
 			return -E_FAULT;
 		}
-		temp = pgdir_walk(pgdir, (const void *)i, 0);
-		if (!temp)
+		temp = env->env_pgdir[PDX(i)];
+		if ((temp & PTE_P) == 0)
 		{
 			user_mem_check_addr = i;
 			return -E_FAULT;
 		}
-		else if ((*temp & 0x7) < perm)
+		else if ((uvpt[(i >> PGSHIFT)] & 0x7) < perm)
 		{
 			user_mem_check_addr = i;
 			return -E_FAULT;

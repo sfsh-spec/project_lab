@@ -67,6 +67,12 @@ static struct v_command vcmd_group[V_CMD_TOTAL] = {
 		"dump physical memory",
 		physical_memory_dump,
 		2,
+	},
+	{
+		"pfl",
+		"get page free list",
+		get_page_free_list,
+		0,
 	}
 };
 static int vcmd_num = sizeof(vcmd_group) / sizeof(vcmd_group[0]);
@@ -252,6 +258,13 @@ int in_page_dump(u32 addr, u32 len)
 {
 	return 0;
 }
+
+int get_page_free_list()
+{
+	cprintf("page free list: 0x%x\n", free_list_debug);
+	return 0;
+}
+
 /***************************************************/
 /***** Kernel monitor command interpreter *****/
 

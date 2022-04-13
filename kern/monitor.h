@@ -25,4 +25,5 @@ int change_permission(u32 va, u32 aut);
 int virtual_memeory_dump(u32 addr, u32 len);
 int physical_memory_dump(u32 paddr, u32 len);
 int test_cmd(int a, int b);
+int get_page_free_list();
 #endif	// !JOS_KERN_MONITOR_H

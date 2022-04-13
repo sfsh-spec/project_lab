@@ -397,8 +397,9 @@ load_icode(struct Env *e, uint8_t *binary)
 			struct PageInfo *p = page_alloc(ALLOC_ZERO);
 			if (!p)
 				panic("program page alloc fail");
-			page_insert(kern_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W);
-			page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
+			page_insert(kern_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W|PTE_U);
+			e->env_pgdir[PDX(temp->p_va + PGSIZE*i)] = kern_pgdir[PDX(temp->p_va + PGSIZE*i)];
+			// page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
 		}
 		cprintf("finish\n");
 		memcpy((uint8_t*)temp->p_va, (uint8_t*)elf_ptr + temp->p_offset, temp->p_filesz);
