@@ -18,6 +18,7 @@ extern size_t npages;
 extern pde_t *kern_pgdir;
 
 extern struct PageInfo *free_list_debug;
+extern size_t pg_cnt;
 //unit is 4K
 #define PAGE_START   1   //for page_init
 #define PAGES_SIZE   64  //128M total memory size, page size: 4K, entry size of a page: 8B 

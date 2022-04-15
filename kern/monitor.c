@@ -261,7 +261,8 @@ int in_page_dump(u32 addr, u32 len)
 
 int get_page_free_list()
 {
-	cprintf("page free list: 0x%x\n", free_list_debug);
+	cprintf("left free page count: %d\n", pg_cnt);
+	cprintf("free list head physical address: 0x%x\n", page2pa(free_list_debug));
 	return 0;
 }
 
@@ -353,6 +354,8 @@ int v_cmd_exc(int argc, char **argv, struct Trapframe *tf)
 int string2value(char* str)
 {
 	char *p = str;
+	while (*p == ' ' || *p == '\t')
+		p++;
 	int hex = 0;
 	int temp_val = 0;
 	int sum = 0;

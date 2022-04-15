@@ -13,7 +13,7 @@
 // These variables are set by i386_detect_memory()
 size_t npages;			// Amount of physical memory (in pages)
 static size_t npages_basemem;	// Amount of base memory (in pages)
-
+size_t pg_cnt;          //for diy debug
 // These variables are set in mem_init()
 pde_t *kern_pgdir;		// Kernel's initial page directory
 struct PageInfo *pages;		// Physical page state array
@@ -296,7 +296,14 @@ page_init(void)
 	pages[1].pp_link = NULL;
 	unsigned int k_use_end = PDX(kern_pgdir) + PAGE_START + PAGES_SIZE + ENVS_SIZE;
 	pages[k_use_end].pp_link = &pages[0x9f];  //io hole and kernel use
-	//cprintf("page_free_list: 0x%x\n", page_free_list);
+
+	//v for debug
+	struct PageInfo *temp = page_free_list;
+	while (temp)
+	{
+		pg_cnt++;
+		temp = temp->pp_link;
+	}
 }
 
 //
@@ -319,14 +326,15 @@ page_alloc(int alloc_flags)
 	{	
 		cprintf("none free page\n");	
 		return NULL;
-		
 	}
 	//cprintf("page_free_list before: 0x%x\n", (int)page_free_list);
 	struct PageInfo *alloc_page = page_free_list;
 	page_free_list = page_free_list->pp_link;
-	free_list_debug = page_free_list; //for debug
 	alloc_page->pp_ref = 0;
 	alloc_page->pp_link = NULL;
+
+	pg_cnt--; //v# for track of free page count
+	free_list_debug = page_free_list; //v# for debug
 	//cprintf("page_free_list after: 0x%x\n", (int)page_free_list);
 
 	if (alloc_flags & ALLOC_ZERO)
@@ -349,8 +357,9 @@ page_free(struct PageInfo *pp)
 			panic("nonzero pp_ref or illegal pp_link");
 	pp->pp_link = page_free_list;
 	page_free_list = pp; 
-	free_list_debug = page_free_list; //for debug
-	// cprintf("page free p address: 0x%x\n", page2pa(pp));
+
+	free_list_debug = page_free_list; //v# for debug
+	pg_cnt++;
 }
 
 //
@@ -405,7 +414,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 			if (pg)
 			{	
 				pg->pp_ref++;
-				pgdir[PDX(va)] = page2pa(pg)|PTE_P;
+				pgdir[PDX(va)] = page2pa(pg)|PTE_P | PTE_U;
 				// cprintf("alloc pg tab entry: 0x%x\n", page2pa(pg)|PTE_P);
 				return  (pte_t*)(KADDR(page2pa(pg))) + PTX(va);
 			}
@@ -445,7 +454,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	int j = 0;
 	for (int i = 0; i<size/PGSIZE; i++)
 	{	
-		if (i % 1024 == 0)
+		if (i == 0 || (va + i*PGSIZE) % PTSIZE == 0)
 		{
 			pt_entry = pgdir_walk(pgdir, (uintptr_t*)va+PGSIZE*i/4, 1);
 			j = 0;
