@@ -406,9 +406,9 @@ monitor(struct Trapframe *tf)
 
 	cprintf("Welcome to the JOS kernel monitor!\n");
 	cprintf("Type 'help' for a list of commands.\n");
-	char str[] = "0xabcd";
-	int a = string2value(str);
-	cprintf("test: %d %x\n", a, a);
+
+	if (tf != NULL)
+		print_trapframe(tf);
 
 	while (1)
 	{
