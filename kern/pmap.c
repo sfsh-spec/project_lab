@@ -467,7 +467,6 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 		//if (i%64 == 0)
 			//cprintf("map i: %x\n", i);
 	}	
-	//for (int k = 0; k<)
 }
 
 //
@@ -508,7 +507,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 		if (!pg_ptr)
 		{
 			cprintf("alloc fail\n");
-			return E_NO_MEM;
+			return -E_NO_MEM;
 		}
 		physaddr_t padd = page2pa(pg_ptr);
 		cprintf("alloc page table p addr: 0x%x\n", padd);
