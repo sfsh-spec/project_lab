@@ -328,7 +328,7 @@ page_init(void)
 	pages[1].pp_link = NULL;
 	unsigned int k_use_end = PDX(kern_pgdir) + PAGE_START + PAGES_SIZE + ENVS_SIZE;
 	pages[k_use_end].pp_link = &pages[0x9f];  //io hole and kernel use
-
+	pages[(MPENTRY_PADDR >> PGSHIFT)+1].pp_link = pages[(MPENTRY_PADDR >> PGSHIFT)-1].pp_link; 
 	//v for debug
 	struct PageInfo *temp = page_free_list;
 	while (temp)
@@ -664,7 +664,13 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	size = ROUNDUP(size, PGSIZE);
+	if (base + size >= MMIOLIM)
+		panic("mmio_map_region overflow");
+	boot_map_region(kern_pgdir, base, size, pa, PTE_PCD | PTE_PWT | PTE_W);
+	base = base + size;
+	return (void *)(base-size);
+	// panic("mmio_map_region not implemented");
 }
 
 static uintptr_t user_mem_check_addr;
