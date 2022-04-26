@@ -280,6 +280,11 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+	for (int i = 0; i < NCPU; i++)
+	{
+		boot_map_region(kern_pgdir, KSTACKTOP - i*(KSTKSIZE+KSTKGAP) - KSTKSIZE, 
+			KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_P | PTE_W);
+	}
 
 }
 
@@ -481,7 +486,7 @@ void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
-	cprintf("b map  va:0x%x pa: 0x%x size: 0x%x\n", va, pa, size);
+	cprintf("boot map region  va:0x%x pa: 0x%x size: 0x%x\n", va, pa, size);
 	pte_t *pt_entry  = NULL;
 	int j = 0;
 	for (int i = 0; i<size/PGSIZE; i++)

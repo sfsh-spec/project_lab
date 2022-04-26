@@ -92,7 +92,7 @@ trap_init(void)
 	extern void t_simderr();
 	extern void t_syscall();
 	extern void t_default();
-	cprintf("divide handle addr 0x%x\n", (u32)t_divide);
+	// cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
 	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
 	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
@@ -138,7 +138,7 @@ trap_init_percpu(void)
 	//   - Use gdt[(GD_TSS0 >> 3) + i] for CPU i's TSS descriptor;
 	//   - You mapped the per-CPU kernel stacks in mem_init_mp()
 	//   - Initialize cpu_ts.ts_iomb to prevent unauthorized environments
-	//     from doing IO (0 is not the correct value!)
+	//     from doing IO (0 is not the correct value!)                      #v ???
 	//
 	// ltr sets a 'busy' flag in the TSS selector, so if you
 	// accidentally load the same TSS on more than one CPU, you'll
@@ -147,21 +147,23 @@ trap_init_percpu(void)
 	// user space on that CPU.
 	//
 	// LAB 4: Your code here:
-
+	thiscpu->cpu_ts.ts_esp0 = KSTACKTOP - cpunum()*(KSTKSIZE+KSTKGAP);
+	thiscpu->cpu_ts.ts_ss0 = GD_KD;
+	thiscpu->cpu_ts.ts_iomb = sizeof(struct Taskstate);        //#v ???   
 	// Setup a TSS so that we get the right stack
 	// when we trap to the kernel.
-	ts.ts_esp0 = KSTACKTOP;
-	ts.ts_ss0 = GD_KD;
-	ts.ts_iomb = sizeof(struct Taskstate);
-
+	//ts.ts_esp0 = KSTACKTOP;
+	//ts.ts_ss0 = GD_KD;
+	//ts.ts_iomb = sizeof(struct Taskstate);
+	uint8_t i = thiscpu->cpu_id;
 	// Initialize the TSS slot of the gdt.
-	gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t) (&ts),
+	gdt[(GD_TSS0 >> 3) + i] = SEG16(STS_T32A, (uint32_t) (&(thiscpu->cpu_ts)),
 					sizeof(struct Taskstate) - 1, 0);
-	gdt[GD_TSS0 >> 3].sd_s = 0;
+	gdt[(GD_TSS0 >> 3) + i].sd_s = 0;
 
 	// Load the TSS selector (like other segment selectors, the
 	// bottom three bits are special; we leave them 0)
-	ltr(GD_TSS0);
+	ltr(GD_TSS0+i*8);
 
 	// Load the IDT
 	lidt(&idt_pd);
