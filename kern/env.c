@@ -133,6 +133,7 @@ env_init(void)
 	for (int i = 1; i < NENV; i++)
 	{
 		temp_ptr->env_link = &envs[i];
+		temp_ptr = temp_ptr->env_link;
 	}
 
 	// Per-CPU part of the initialization
@@ -204,6 +205,7 @@ env_setup_vm(struct Env *e)
 	e->env_pgdir[PDX(UENVS)] = kern_pgdir[PDX(UENVS)] | PTE_U;
 	e->env_pgdir[PDX(UPAGES)] = kern_pgdir[PDX(UPAGES)] | PTE_U;
 	e->env_pgdir[PDX(KSTACKTOP-KSTKSIZE)] = kern_pgdir[PDX(KSTACKTOP-KSTKSIZE)] | PTE_W;
+	e->env_pgdir[PDX(MMIOBASE)] = kern_pgdir[PDX(MMIOBASE)];
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
@@ -396,16 +398,16 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	for (;temp<end;temp++)
 	{
-		cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
-		temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
+		// cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
+		// temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
 		if (temp->p_type != ELF_PROG_LOAD)
 		{
-			cprintf("non load segment\n");
+			// cprintf("non load segment\n");
 			continue;
 		}
-		cprintf("p_va 0x%x\n", temp->p_va);
+		// cprintf("p_va 0x%x\n", temp->p_va);
 		u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
-		cprintf("needed page number 0x%x\n", pg_num);
+		// cprintf("needed page number 0x%x\n", pg_num);
 		for (u32 i = 0; i<pg_num;i++)
 		{
 			struct PageInfo *p = page_alloc(ALLOC_ZERO);
@@ -415,15 +417,32 @@ load_icode(struct Env *e, uint8_t *binary)
 			e->env_pgdir[PDX(temp->p_va + PGSIZE*i)] = kern_pgdir[PDX(temp->p_va + PGSIZE*i)];
 			// page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
 		}
-		cprintf("finish\n");
+
+		// cprintf("finish\n");
 		memcpy((uint8_t*)temp->p_va, (uint8_t*)elf_ptr + temp->p_offset, temp->p_filesz);
 		// cprintf("round 0x%x\n", (u32)temp);
+	}
+
+	temp = (struct Proghdr *)((uint8_t*)elf_ptr + elf_ptr->e_phoff);
+	for (; temp<end;temp++)
+	{	
+		if (temp->p_type != ELF_PROG_LOAD)
+		{
+			// cprintf("non load segment\n");
+			continue;
+		}
+
+		u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
+		for (u32 i = 0; i<pg_num; i++)
+		{
+			kern_pgdir[PDX(temp->p_va + PGSIZE*i)] = 0;
+		}
 	}
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
-	cprintf("alloc stack\n");
+	// cprintf("alloc stack\n");
 	struct PageInfo *p_stk = page_alloc(ALLOC_ZERO);
 	if (!p_stk)
 		panic("stack page alloc fail");
@@ -586,9 +605,13 @@ env_run(struct Env *e)
 		if (curenv->env_status == ENV_RUNNING)
 			curenv->env_status = ENV_RUNNABLE;
 	}
+	
 	curenv = e;
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
+	unlock_kernel();
+	cprintf("current env: 0x%x\n", (u32)curenv);
+	cprintf("env pgdir %p\n", e->env_pgdir);
 	lcr3(PADDR(e->env_pgdir));
 	// cprintf("gogogo\n");
 	env_pop_tf(&e->env_tf);
