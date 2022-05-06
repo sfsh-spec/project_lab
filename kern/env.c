@@ -600,6 +600,7 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
+	cprintf("env run start\n");
 	if (curenv)
 	{
 		if (curenv->env_status == ENV_RUNNING)
@@ -609,9 +610,10 @@ env_run(struct Env *e)
 	curenv = e;
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
-	unlock_kernel();
-	cprintf("current env: 0x%x\n", (u32)curenv);
+	cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
 	cprintf("env pgdir %p\n", e->env_pgdir);
+	cprintf("unlock\n");
+	unlock_kernel();
 	lcr3(PADDR(e->env_pgdir));
 	// cprintf("gogogo\n");
 	env_pop_tf(&e->env_tf);

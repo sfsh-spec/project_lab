@@ -39,7 +39,7 @@ sys_cgetc(void)
 static envid_t
 sys_getenvid(void)
 {
-	cprintf("-----curenv----- 0x%x\n", (u32)curenv);
+	cprintf("-----getenvid----- 0x%x\n", (u32)curenv);
 	return curenv->env_id;
 }
 

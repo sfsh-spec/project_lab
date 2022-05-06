@@ -222,6 +222,7 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	u32 trap_num = tf->tf_trapno;
 	const char *t_name = trapname(trap_num);
+	cprintf("CPU: %d ", cpunum());
 	cprintf("Trap frame at %p\n", tf);
 	cprintf("  trap 0x%08x %s\n", trap_num, t_name);
 	// print_trapframe(tf);

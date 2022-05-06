@@ -30,7 +30,8 @@ sched_yield(void)
 
 	// LAB 4: Your code here.
 	idle = thiscpu->cpu_env;
-	cprintf("idle: 0x%x\n", (u32)(idle));
+	cprintf("sched start\n");
+	cprintf("CPU: %d,  idle: 0x%x\n",cpunum(), (u32)(idle));
 	struct Env *temp = envs;
 	if (idle == NULL)
 	{
@@ -57,7 +58,7 @@ sched_yield(void)
 				return;
 			}
 
-		for (temp = envs; temp < idle-1; temp++)
+		for (temp = envs; temp < idle; temp++)
 			if (temp->env_status == ENV_RUNNABLE)
 			{	
 				cprintf("*****selected env: 0x%x\n", (u32)temp);
@@ -72,6 +73,7 @@ sched_yield(void)
 		}
 	}
 	// sched_halt never returns
+	cprintf("gogogo\n");
 	sched_halt();
 }
 
@@ -91,6 +93,7 @@ sched_halt(void)
 		     envs[i].env_status == ENV_DYING))
 			break;
 	}
+	cprintf("iiii: %d\n", i);
 	if (i == NENV) {
 		cprintf("No runnable environments in the system!\n");
 		while (1)
