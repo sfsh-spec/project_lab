@@ -217,7 +217,33 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	//   check the current permissions on the page.
 
 	// LAB 4: Your code here.
-	panic("sys_page_map not implemented");
+	u32 s_va = (u32)srcva;
+	u32 d_va = (u32)dstva;
+	if (s_va % PGSIZE != 0 || d_va % PGSIZE != 0)
+		return -E_INVAL;
+	if (s_va >= UTOP || d_va >= UTOP)
+		return -E_INVAL;
+
+	struct Env *s_store;
+	struct Env *d_store;
+	if (envid2env(srcenvid, &s_store, 1) != 0 || envid2env(dstenvid, &d_store, 1) != 0)
+		return -E_BAD_ENV;
+
+	pte_t *pte_store;
+	if (page_lookup(s_store->env_pgdir, srcva, &pte_store) == NULL)
+		return -E_INVAL;
+	u32 write = *pte_store & PTE_W;
+	if ((perm & PTE_W) && (write == 0))
+		return -E_INVAL;
+
+	if (perm & (PTE_U | PTE_P) != 5)
+		return -E_INVAL;
+	if (perm & (~PTE_SYSCALL) != 0)
+		return -E_INVAL;
+	int ret = page_insert(d_store->env_pgdir, pa2page(PADDR(*pte_store)), dstva, perm);
+	if (ret != 0)
+		return -E_NO_MEM;
+	// panic("sys_page_map not implemented");
 }
 
 // Unmap the page of memory at 'va' in the address space of 'envid'.
@@ -233,7 +259,15 @@ sys_page_unmap(envid_t envid, void *va)
 	// Hint: This function is a wrapper around page_remove().
 
 	// LAB 4: Your code here.
-	panic("sys_page_unmap not implemented");
+	if ((u32)va >= UTOP || (u32)va % PGSIZE != 0)
+		return -E_INVAL;
+	struct Env *store;
+	if (envid2env(envid, &store, 1) != 0)
+		return -E_BAD_ENV;
+	page_remove(store->env_pgdir, va);
+
+
+	// panic("sys_page_unmap not implemented");
 }
 
 // Try to send 'value' to the target env 'envid'.
