@@ -245,7 +245,7 @@ trap_dispatch(struct Trapframe *tf)
 		case T_SYSCALL:
 			cprintf("syscall num: 0x%x\n",tf->tf_regs.reg_eax);
 			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
-				tf->tf_regs.reg_ebp, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+				tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret;
 			return;
 

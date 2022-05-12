@@ -87,11 +87,14 @@ sys_exofork(void)
 	// LAB 4: Your code here.
 	struct Env *new;
 	int ret = env_alloc(&new, curenv->env_id);
+	cprintf("env alloc ret: %d\n", ret);
 	if (ret < 0)
 		return ret;
 	new->env_status = ENV_NOT_RUNNABLE;
 	new->env_tf = curenv->env_tf; //#v i am not sure
+	cprintf("new env id: 0x%x\n", new->env_id);
 	return new->env_id;
+
 	// panic("sys_exofork not implemented");
 }
 
@@ -112,7 +115,7 @@ sys_env_set_status(envid_t envid, int status)
 	// envid's status.
 
 	// LAB 4: Your code here.
-	if (status != ENV_RUNNABLE || status != ENV_NOT_RUNNABLE)
+	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE)
 		return -E_INVAL;
 	struct Env *e;
 	int ret = envid2env(envid, &e, 1);
@@ -166,19 +169,21 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//   allocated!
 
 	// LAB 4: Your code here.
+	cprintf("page alloc perm: 0x%x\n", perm);
 	if ((u32)va >= UTOP || (u32)va % PGSIZE != 0)
 		return -E_INVAL;
-	if (perm & (PTE_U | PTE_P) != 5)
+	if ((perm & PTE_P) == 0 ||(perm & PTE_U) == 0)
 		return -E_INVAL;
-	if (perm & (~PTE_SYSCALL) != 0)
+	if ((perm & (~PTE_SYSCALL)) != 0)
 		return -E_INVAL;
 
 	struct Env *store;
 	if (envid2env(envid, &store, 1) != 0)
 		return -E_BAD_ENV;
 	struct PageInfo *new = page_alloc(ALLOC_ZERO);
-	if (new != NULL)
+	if (new == NULL)
 		return -E_NO_MEM;
+	cprintf("sys page alloc: 0x%x\n", page2pa(new));
 	int ret = page_insert(store->env_pgdir, new, va, perm);
 	if (ret != 0)
 	{
@@ -236,13 +241,17 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	if ((perm & PTE_W) && (write == 0))
 		return -E_INVAL;
 
-	if (perm & (PTE_U | PTE_P) != 5)
+	if ((perm & PTE_P) == 0 ||(perm & PTE_U) == 0)
 		return -E_INVAL;
-	if (perm & (~PTE_SYSCALL) != 0)
+	if ((perm & (~PTE_SYSCALL)) != 0)
 		return -E_INVAL;
-	int ret = page_insert(d_store->env_pgdir, pa2page(PADDR(*pte_store)), dstva, perm);
+	// void *kva = (void *)*pte_store;
+	cprintf("sys page map. pte_store: 0x%x\n", (u32)pte_store);
+	int ret = page_insert(d_store->env_pgdir, pa2page(*pte_store), dstva, perm);
 	if (ret != 0)
 		return -E_NO_MEM;
+	
+	return 0;
 	// panic("sys_page_map not implemented");
 }
 
@@ -266,7 +275,7 @@ sys_page_unmap(envid_t envid, void *va)
 		return -E_BAD_ENV;
 	page_remove(store->env_pgdir, va);
 
-
+	return 0;
 	// panic("sys_page_unmap not implemented");
 }
 
@@ -361,6 +370,29 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_yield:
 			sys_yield();
 			return 0;
+
+		case SYS_exofork:
+			int ret1 = sys_exofork();
+			cprintf("~~~~~exofork return: 0x%x\n", ret1);
+			return ret1;
+		case SYS_page_alloc:
+			int ret2 = sys_page_alloc(a1, (void*)a2, (int)a3);
+			cprintf("~~~~~page alloc return: %d\n", ret2);
+			return ret2;
+		case SYS_page_map:
+			int ret = sys_page_map(a1, (void*)a2, a3, (void*)a4, (int)a5);
+			cprintf("~~~~~page map return: %d\n", ret);
+			return ret;
+
+		case SYS_page_unmap:
+			int ret3 = sys_page_unmap(a1, (void*)a2);
+			cprintf("~~~~~page ummap return: %d\n", ret3);
+			return ret3;
+
+		case SYS_env_set_status:
+			int ret4 = sys_env_set_status(a1, (int)a2);
+			cprintf("~~~~~env set status return: %d\n", ret4);
+			return ret4;
 
 		default:
 			return -E_INVAL;
