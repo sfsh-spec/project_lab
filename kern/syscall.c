@@ -92,6 +92,7 @@ sys_exofork(void)
 		return ret;
 	new->env_status = ENV_NOT_RUNNABLE;
 	new->env_tf = curenv->env_tf; //#v i am not sure
+	new->env_tf.tf_regs.reg_eax = 0;
 	cprintf("new env id: 0x%x\n", new->env_id);
 	return new->env_id;
 
