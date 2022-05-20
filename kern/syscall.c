@@ -140,7 +140,12 @@ static int
 sys_env_set_pgfault_upcall(envid_t envid, void *func)
 {
 	// LAB 4: Your code here.
-	panic("sys_env_set_pgfault_upcall not implemented");
+	struct Env *store;
+	if (envid2env(envid, &store, 1) != 0)
+		return -E_BAD_ENV;
+	store->env_pgfault_upcall = func;
+	return 0;
+	// panic("sys_env_set_pgfault_upcall not implemented");
 }
 
 // Allocate a page of memory and map it at 'va' with permission
@@ -173,7 +178,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	cprintf("page alloc perm: 0x%x\n", perm);
 	if ((u32)va >= UTOP || (u32)va % PGSIZE != 0)
 		return -E_INVAL;
-	if ((perm & PTE_P) == 0 ||(perm & PTE_U) == 0)
+	if ((perm & PTE_P) == 0 || (perm & PTE_U) == 0)
 		return -E_INVAL;
 	if ((perm & (~PTE_SYSCALL)) != 0)
 		return -E_INVAL;
@@ -376,10 +381,12 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			int ret1 = sys_exofork();
 			cprintf("~~~~~exofork return: 0x%x\n", ret1);
 			return ret1;
+
 		case SYS_page_alloc:
 			int ret2 = sys_page_alloc(a1, (void*)a2, (int)a3);
 			cprintf("~~~~~page alloc return: %d\n", ret2);
 			return ret2;
+
 		case SYS_page_map:
 			int ret = sys_page_map(a1, (void*)a2, a3, (void*)a4, (int)a5);
 			cprintf("~~~~~page map return: %d\n", ret);
@@ -394,6 +401,11 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			int ret4 = sys_env_set_status(a1, (int)a2);
 			cprintf("~~~~~env set status return: %d\n", ret4);
 			return ret4;
+		
+		case SYS_env_set_pgfault_upcall:
+			int ret5 = sys_env_set_pgfault_upcall(a1, (void*)a2);
+			cprintf("~~~~~env set pgfault upcall return: %d\n", ret5);
+			return ret5;
 
 		default:
 			return -E_INVAL;

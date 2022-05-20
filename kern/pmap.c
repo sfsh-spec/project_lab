@@ -708,7 +708,6 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	u32 *pgdir = env->env_pgdir;
 	if (vaddr >= ULIM)
 	{
-
 		user_mem_check_addr = vaddr;
 		return -E_FAULT;
 	}
@@ -717,7 +716,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	cprintf("###va: 0x%x\n", (u32)va);
 	temp = env->env_pgdir[PDX(vaddr)];
 	cprintf("###temp: 0x%x\n", (u32)temp);
-	cprintf("uvpt: 0x%x\n", uvpt[(vaddr >> PGSHIFT)]);
+	// cprintf("uvpt: 0x%x\n", uvpt[(vaddr >> PGSHIFT)]);
 	if ((temp & PTE_P) == 0)
 	{	
 		user_mem_check_addr = vaddr;
