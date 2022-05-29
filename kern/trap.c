@@ -376,6 +376,9 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	cprintf("handle user page fault trap frame start\n");
+	cprintf("fault va: 0x%x\n", fault_va);
+	cprintf("upcall: 0x%x\n", (u32)curenv->env_pgfault_upcall);
 	if (curenv->env_pgfault_upcall != NULL)
 	{
 		if (tf->tf_esp < USTACKTOP)
@@ -389,6 +392,7 @@ page_fault_handler(struct Trapframe *tf)
 			utf->utf_err = tf->tf_err;
 			tf->tf_esp = (u32)utf;
 			tf->tf_eip = (u32)curenv->env_pgfault_upcall; 
+			cprintf("continue esp: 0x%x  eip: 0x%x\n", tf->tf_esp, tf->tf_eip);
 			env_run(curenv);
 		}
 		else

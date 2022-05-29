@@ -31,7 +31,9 @@ set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 		// LAB 4: Your code here.
 		envid_t id = thisenv->env_id;
 		sys_page_alloc(id, (void*)(UXSTACKTOP - PGSIZE), PTE_W | PTE_P | PTE_U);
+		cprintf("set upcall: 0x%x\n", (u32)_pgfault_upcall);
 		sys_env_set_pgfault_upcall(id, _pgfault_upcall);
+
 		// panic("set_pgfault_handler not implemented");
 	}
 

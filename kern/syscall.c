@@ -92,7 +92,7 @@ sys_exofork(void)
 		return ret;
 	new->env_status = ENV_NOT_RUNNABLE;
 	new->env_tf = curenv->env_tf; //
-	new->env_tf.tf_regs.reg_eax = 0;
+	new->env_tf.tf_regs.reg_eax = 0; //for child, set appeared return value to 0
 	cprintf("new env id: 0x%x\n", new->env_id);
 	return new->env_id;
 
@@ -358,7 +358,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 
 	// panic("syscall not implemented");
-	cprintf("a1: 0x%x a2:0x%x a3: 0x%x\n", a1, a2, a3);
+	cprintf("a1: 0x%x a2:0x%x a3: 0x%x a4: 0x%x a5: 0x%x\n", a1, a2, a3, a4, a5);
 	switch (syscallno) {
 		case SYS_cputs:
 			sys_cputs((const char*)a1, a2);
