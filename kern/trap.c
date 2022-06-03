@@ -92,6 +92,12 @@ trap_init(void)
 	extern void t_simderr();
 	extern void t_syscall();
 	extern void t_default();
+
+	extern void i_timer();
+	extern void i_kbd();
+	extern void i_serial();
+	extern void i_spurious();
+	extern void i_ide();
 	// cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
 	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
@@ -114,6 +120,12 @@ trap_init(void)
 	SETGATE(idt[T_SIMDERR], 1, GD_KT, t_simderr, 1)
 	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 3)
 	SETGATE(idt[T_DEFAULT], 1, GD_KT, t_default, 1)
+
+	SETGATE(idt[IRQ_TIMER+IRQ_OFFSET], 0, GD_KT, i_timer, 3)
+	SETGATE(idt[IRQ_KBD+IRQ_OFFSET], 0, GD_KT, i_kbd, 3)
+	SETGATE(idt[IRQ_SERIAL+IRQ_OFFSET], 0, GD_KT, i_serial, 3)
+	SETGATE(idt[IRQ_SPURIOUS+IRQ_OFFSET], 0, GD_KT, i_spurious, 3)
+	SETGATE(idt[IRQ_IDE+IRQ_OFFSET], 0, GD_KT, i_ide, 3)
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -254,10 +266,20 @@ trap_dispatch(struct Trapframe *tf)
 
 	}
 
+	switch (trap_num)
+	{
+		case (IRQ_TIMER + IRQ_OFFSET):
+			cprintf("clock interrupt\n");
+			lapic_eoi();
+			sched_yield();
+			return;
+
+		default:
+			break;
+	}
 	// Handle clock interrupts. Don't forget to acknowledge the
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
-
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
@@ -287,6 +309,7 @@ trap(struct Trapframe *tf)
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
+	asm volatile("cli" ::: "cc");
 	assert(!(read_eflags() & FL_IF));
 
 	if ((tf->tf_cs & 3) == 3) {
@@ -342,7 +365,10 @@ page_fault_handler(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	u32 mode = tf->tf_cs & 0x3;
 	if (mode == 0)
+	{
+		cprintf("fault eip: 0x%x\n", tf->tf_eip);
 		panic("kernel mode panic. fault_va: 0x%x\n", fault_va);
+	}
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
 
