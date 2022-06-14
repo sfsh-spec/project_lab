@@ -337,7 +337,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		return -E_IPC_NOT_RECV;
 	pte_t val; 
 	store->env_ipc_perm = 0;
-	void *dstva = (u32)store->env_ipc_dstva;
+	void *dstva = store->env_ipc_dstva;
 	if ((u32)dstva < UTOP)
 	{
 		if ((u32)srcva < UTOP)
@@ -350,15 +350,16 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 				return -E_INVAL;
 			else	
 			{
+				u32 w = perm & PTE_W;
 				val = *entry;
-				if ((val & PTE_W) == 0 && (perm & PTE_W) == 1)
+				if ((val & PTE_W) == 0 && (perm & PTE_W) != 0)
 					return -E_INVAL;
-				if (val & PTE_U == 0)	
+				if ((val & PTE_U) == 0)	
 					return -E_INVAL;
 				if (((val & 0xfff) & (~PTE_SYSCALL)) != 0)
 					return -E_INVAL;
 			}
-			struct PageInfo *pp = pa2page(PADDR(val));
+			struct PageInfo *pp = pa2page(val);
 			int ret = page_insert(store->env_pgdir, pp, dstva, perm);
 			if (ret < 0)
 				return -E_NO_MEM;
@@ -370,6 +371,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	store->env_ipc_recving = false;
 	store->env_status = ENV_RUNNABLE;
 	store->env_tf.tf_regs.reg_eax = 0;
+	return 0;
 	//panic("sys_ipc_try_send not implemented");
 }
 
