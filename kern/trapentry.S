@@ -75,7 +75,6 @@ TRAPHANDLER_NOEC(i_serial, IRQ_SERIAL + IRQ_OFFSET)
 TRAPHANDLER_NOEC(i_spurious, IRQ_SPURIOUS + IRQ_OFFSET)
 TRAPHANDLER_NOEC(i_ide, IRQ_IDE + IRQ_OFFSET)
 
-
 /*
  * Lab 3: Your code here for _alltraps
  */

@@ -113,12 +113,12 @@ trap_init(void)
 	SETGATE(idt[T_SEGNP], 1, GD_KT, t_segnp, 1)
 	SETGATE(idt[T_STACK], 1, GD_KT, t_stack, 1)
 	SETGATE(idt[T_GPFLT], 1, GD_KT, t_gpflt, 1)
-	SETGATE(idt[T_PGFLT], 1, GD_KT, t_pgflt, 3)
+	SETGATE(idt[T_PGFLT], 0, GD_KT, t_pgflt, 3)
 	SETGATE(idt[T_FPERR], 1, GD_KT, t_fperr, 1)
 	SETGATE(idt[T_ALIGN], 1, GD_KT, t_align, 1)
 	SETGATE(idt[T_MCHK], 1, GD_KT, t_mchk, 1)
 	SETGATE(idt[T_SIMDERR], 1, GD_KT, t_simderr, 1)
-	SETGATE(idt[T_SYSCALL], 1, GD_KT, t_syscall, 3)
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, t_syscall, 3)
 	SETGATE(idt[T_DEFAULT], 1, GD_KT, t_default, 1)
 
 	SETGATE(idt[IRQ_TIMER+IRQ_OFFSET], 0, GD_KT, i_timer, 3)
@@ -302,6 +302,7 @@ trap(struct Trapframe *tf)
 	if (panicstr)
 		asm volatile("hlt");
 
+	// asm volatile("cli" ::: "cc");
 	// Re-acqurie the big kernel lock if we were halted in
 	// sched_yield()
 	if (xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED)
@@ -309,17 +310,16 @@ trap(struct Trapframe *tf)
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
-	asm volatile("cli" ::: "cc");
 	assert(!(read_eflags() & FL_IF));
 
-	if ((tf->tf_cs & 3) == 3) {
+	if ((tf->tf_cs & 0x3) == 0x3) {
 		// Trapped from user mode.
 		// Acquire the big kernel lock before doing any
 		// serious kernel work.
 		// LAB 4: Your code here.
 		lock_kernel();
 		assert(curenv);
-
+		cprintf("user mode trap\n");
 		// Garbage collect if current enviroment is a zombie
 		if (curenv->env_status == ENV_DYING) {
 			env_free(curenv);
@@ -409,7 +409,10 @@ page_fault_handler(struct Trapframe *tf)
 	{
 		if (tf->tf_esp < USTACKTOP)
 		{
+
+			// user_mem_assert(curenv, (void *)(UXSTACKTOP-PGSIZE), PGSIZE, PTE_W);
 			struct UTrapframe *utf = (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe));
+			user_mem_assert(curenv, utf, sizeof(struct UTrapframe), PTE_W);
 			utf->utf_regs = tf->tf_regs;
 			utf->utf_eflags = tf->tf_eflags;
 			utf->utf_eip = tf->tf_eip;
@@ -418,11 +421,12 @@ page_fault_handler(struct Trapframe *tf)
 			utf->utf_err = tf->tf_err;
 			tf->tf_esp = (u32)utf;
 			tf->tf_eip = (u32)curenv->env_pgfault_upcall; 
-			cprintf("continue esp: 0x%x  eip: 0x%x\n", tf->tf_esp, tf->tf_eip);
+			// cprintf("continue esp: 0x%x  eip: 0x%x\n", tf->tf_esp, tf->tf_eip);
 			env_run(curenv);
 		}
 		else
 		{
+			// user_mem_assert(curenv, (void *)(UXSTACKTOP-PGSIZE), PGSIZE, PTE_W);
 			struct UTrapframe *utf = (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4);
 			user_mem_assert(curenv, utf, sizeof(struct UTrapframe), PTE_W);
 			u32 *empty = (u32*)(tf->tf_esp -4);

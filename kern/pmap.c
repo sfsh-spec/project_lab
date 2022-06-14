@@ -231,6 +231,17 @@ mem_init(void)
 	// Your code goes here:
 	
 	boot_map_region(kern_pgdir, KERNBASE, 0xffffffff-KERNBASE+1, 0, PTE_W|PTE_P);
+	// for (int i = 0; i<1024; i++)
+	{
+		pte_t *entry = pgdir_walk(kern_pgdir, (void *)0xf7fff000, 0);
+
+		cprintf("*******************\n");
+		if (entry == NULL)
+			cprintf("entry null\n");
+		else
+			cprintf("0x%x\n", *entry);
+	
+	}
 	mem_init_mp();
 	cprintf("gogogo\n");
 	// Check that the initial page directory has been set up correctly.
@@ -491,15 +502,12 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	int j = 0;
 	for (int i = 0; i<size/PGSIZE; i++)
 	{	
-		if (i == 0 || (va + i*PGSIZE) % PTSIZE == 0)
-		{
-			pt_entry = pgdir_walk(pgdir, (uintptr_t*)va+PGSIZE*i/4, 1);
+			pt_entry = pgdir_walk(pgdir, (unsigned char*)(va+PGSIZE*i), 1);
 			j = 0;
 			pgdir[PDX(va+PGSIZE*i)] |= perm;
 			// cprintf("pde pos 0x%x\n", PDX(va+PGSIZE*i));
-		}
-		*(pt_entry+j) = (pa+i*PGSIZE) | perm | PTE_P;
-		j++;
+		*(pt_entry) = (pa+i*PGSIZE) | perm | PTE_P;
+		// j++;
 		//cprintf("pd_entry: 0x%x\n", *(pd_entry+j));
 		//if (i%64 == 0)
 			//cprintf("map i: %x\n", i);
@@ -713,9 +721,9 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	}
 	u32 *uvpt = (u32 *)UVPT;
 	// temp = pgdir_walk(pgdir, va, 0);
-	cprintf("###va: 0x%x\n", (u32)va);
+	// cprintf("###va: 0x%x\n", (u32)va);
 	temp = env->env_pgdir[PDX(vaddr)];
-	cprintf("###temp: 0x%x\n", (u32)temp);
+	// cprintf("###temp: 0x%x\n", (u32)temp);
 	// cprintf("uvpt: 0x%x\n", uvpt[(vaddr >> PGSHIFT)]);
 	if ((temp & PTE_P) == 0)
 	{	

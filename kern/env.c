@@ -210,7 +210,7 @@ env_setup_vm(struct Env *e)
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
 	// e->env_pgdir[PDX(KERNBASE)] = PADDR((u32*)KERNBASE) | PTE_P;
-	boot_map_region(dir, 0xf0000000, 0x400000, 0x0, PTE_P | PTE_W);
+	boot_map_region(dir, KERNBASE, 0x10000000, 0x0, PTE_P | PTE_W);
 	// boot_map_region(dir, 0xf0114000, 0x6e900, 0x114000, PTE_W);
 	// boot_map_region(dir, 0xf0183000, 0x1000, 0x183000, PTE_W);
 	cprintf("env setup vm done\n");
@@ -255,9 +255,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// to prevent the register values
 	// of a prior environment inhabiting this Env structure
 	// from "leaking" into our new environment.
-	// cprintf("####memset\n");
+	cprintf("####memset\n");
 	memset(&e->env_tf, 0, sizeof(e->env_tf));
-	// cprintf("####memset done\n");
+	cprintf("####memset done\n");
 
 	// Set up appropriate initial values for the segment registers.
 	// GD_UD is the user data segment selector in the GDT, and
@@ -600,7 +600,7 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
-	cprintf("env run start\n");
+	// cprintf("env run start\n");
 	if (curenv)
 	{
 		if (curenv->env_status == ENV_RUNNING)
@@ -611,7 +611,7 @@ env_run(struct Env *e)
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
 	cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
-	cprintf("env pgdir %p\n", e->env_pgdir);
+	// cprintf("env pgdir %p\n", e->env_pgdir);
 	cprintf("unlock\n");
 	lcr3(PADDR(e->env_pgdir));
 	unlock_kernel();

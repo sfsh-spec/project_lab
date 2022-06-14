@@ -80,18 +80,18 @@ duppage(envid_t envid, unsigned pn)
 	int perm = PTE_P | PTE_U; 
 	val1 = uvptab[pn] & PTE_W;
 	val2 = uvptab[pn] & PTE_COW;
-	cprintf("val1: %d val2: %d\n", val1, val2);
+	// cprintf("val1: %d val2: %d\n", val1, val2);
 	if (( val1 > 0) || (val2 > 0)) 
 		perm |= PTE_COW; 
 
 	r = sys_page_map(0, (void*)(pn*PGSIZE), envid, (void*)(pn*PGSIZE), perm);
 	if (r != 0)
 		panic("page map fail\n");
-	cprintf("map success. envid: 0x%x, page num: 0x%x, perm: 0x%x\n", envid, pn, perm);
+	// cprintf("map success. envid: 0x%x, page num: 0x%x, perm: 0x%x\n", envid, pn, perm);
 	// val1 = perm & PTE_COW;
 	if (val1 > 0|| val2 > 0)
 	{
-		cprintf("remap own. page num: 0x%x, perm: 0x%x\n", pn, perm);
+		// cprintf("remap own. page num: 0x%x, perm: 0x%x\n", pn, perm);
 		r = sys_page_map(0, (void*)(pn*PGSIZE), 0, (void*)(pn*PGSIZE), perm);
 		if (r != 0)
 			panic("page map fail. own\n");
@@ -158,7 +158,7 @@ fork(void)
 				continue;
 			else
 			{
-				cprintf("dupe page num: 0x%x\n", pn);
+				// cprintf("dupe page num: 0x%x\n", pn);
 				duppage(child, pn);
 			}
 		}

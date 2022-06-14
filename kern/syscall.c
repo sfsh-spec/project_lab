@@ -175,7 +175,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//   allocated!
 
 	// LAB 4: Your code here.
-	cprintf("page alloc perm: 0x%x\n", perm);
+	// cprintf("page alloc perm: 0x%x\n", perm);
 	if ((u32)va >= UTOP || (u32)va % PGSIZE != 0)
 		return -E_INVAL;
 	if ((perm & PTE_P) == 0 || (perm & PTE_U) == 0)
@@ -189,7 +189,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	struct PageInfo *new = page_alloc(ALLOC_ZERO);
 	if (new == NULL)
 		return -E_NO_MEM;
-	cprintf("sys page alloc: 0x%x\n", page2pa(new));
+	// cprintf("sys page alloc: 0x%x\n", page2pa(new));
 	int ret = page_insert(store->env_pgdir, new, va, perm);
 	if (ret != 0)
 	{
@@ -327,7 +327,50 @@ static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
-	panic("sys_ipc_try_send not implemented");
+	struct Env *store;
+	int res = envid2env(envid, &store, 0);
+	if (res < 0)
+		return -E_BAD_ENV;
+	if (store->env_ipc_recving == false)
+		return -E_IPC_NOT_RECV;
+	if (store->env_ipc_from  != 0)
+		return -E_IPC_NOT_RECV;
+	pte_t val; 
+	store->env_ipc_perm = 0;
+	void *dstva = (u32)store->env_ipc_dstva;
+	if ((u32)dstva < UTOP)
+	{
+		if ((u32)srcva < UTOP)
+		{
+			if ((u32)srcva % PGSIZE != 0)
+				return -E_INVAL;
+
+			pte_t *entry = pgdir_walk(curenv->env_pgdir, srcva, 0);
+			if (entry == NULL)
+				return -E_INVAL;
+			else	
+			{
+				val = *entry;
+				if ((val & PTE_W) == 0 && (perm & PTE_W) == 1)
+					return -E_INVAL;
+				if (val & PTE_U == 0)	
+					return -E_INVAL;
+				if (((val & 0xfff) & (~PTE_SYSCALL)) != 0)
+					return -E_INVAL;
+			}
+			struct PageInfo *pp = pa2page(PADDR(val));
+			int ret = page_insert(store->env_pgdir, pp, dstva, perm);
+			if (ret < 0)
+				return -E_NO_MEM;
+			store->env_ipc_perm = perm;
+		}
+	}
+	store->env_ipc_value = value;
+	store->env_ipc_from = curenv->env_id;
+	store->env_ipc_recving = false;
+	store->env_status = ENV_RUNNABLE;
+	store->env_tf.tf_regs.reg_eax = 0;
+	//panic("sys_ipc_try_send not implemented");
 }
 
 // Block until a value is ready.  Record that you want to receive
@@ -345,8 +388,18 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// LAB 4: Your code here.
-	panic("sys_ipc_recv not implemented");
+	curenv->env_ipc_recving = true;
+	curenv->env_ipc_dstva = dstva;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+	if ((u32)dstva < UTOP)
+	{
+		if ( (u32)dstva % PGSIZE != 0)
+			return -E_INVAL;
+	}
+
+	curenv->env_ipc_dstva = dstva;
 	return 0;
+	// panic("sys_ipc_recv not implemented");
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
@@ -358,7 +411,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 
 	// panic("syscall not implemented");
-	cprintf("a1: 0x%x a2:0x%x a3: 0x%x a4: 0x%x a5: 0x%x\n", a1, a2, a3, a4, a5);
+	// cprintf("a1: 0x%x a2:0x%x a3: 0x%x a4: 0x%x a5: 0x%x\n", a1, a2, a3, a4, a5);
 	switch (syscallno) {
 		case SYS_cputs:
 			sys_cputs((const char*)a1, a2);
@@ -379,7 +432,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 
 		case SYS_exofork:
 			int ret1 = sys_exofork();
-			cprintf("~~~~~exofork return: 0x%x\n", ret1);
+			 cprintf("~~~~~exofork return: 0x%x\n", ret1);
 			return ret1;
 
 		case SYS_page_alloc:
@@ -406,6 +459,16 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			int ret5 = sys_env_set_pgfault_upcall(a1, (void*)a2);
 			cprintf("~~~~~env set pgfault upcall return: %d\n", ret5);
 			return ret5;
+
+		case SYS_ipc_try_send:
+			int ret6 = sys_ipc_try_send(a1, a2, (void*)a3, a4);
+			cprintf("~~~~~ipc try send return: %d\n", ret6);
+			return ret6;
+
+		case SYS_ipc_recv:
+			int ret7 = sys_ipc_recv((void*)a1);
+			cprintf("~~~~~ipc recv return: %d\n", ret7);
+			return ret7;
 
 		default:
 			return -E_INVAL;
