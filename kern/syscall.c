@@ -145,6 +145,7 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
 		return -E_BAD_ENV;
 	store->env_pgfault_upcall = func;
 	return 0;
+
 	// panic("sys_env_set_pgfault_upcall not implemented");
 }
 
