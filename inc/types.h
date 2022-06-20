@@ -16,8 +16,6 @@ typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef int int32_t;
 typedef unsigned int uint32_t;
-typedef unsigned int u32;
-typedef u32 pa_t;
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 
@@ -73,11 +71,5 @@ typedef int32_t off_t;
 
 // Return the offset of 'member' relative to the beginning of a struct type
 #define offsetof(type, member)  ((size_t) (&((type*)0)->member))
-
-
-/**************************My Operations*******************************/
-#define BIT(val, pos)  ((val >> pos) & 1)
-
-
 
 #endif /* !JOS_INC_TYPES_H */

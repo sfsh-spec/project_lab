@@ -82,32 +82,7 @@
  *     there if desired.  JOS user programs map pages temporarily at UTEMP.
  */
 
-/*
- * kernel virtual memory map
- *	 
- *    4 Gig -------->  +------------------------------+
- *                     |                              | 
- *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *                     :              .               :
- *                     :              .               :
- *                     :              .               :
- * 
- *          top ---->  +------------------------------+ 
- *                     |                              | 
- *                     |       struct Env array       |	 24*PGSIZE 
- *         envs ---->  +------------------------------+ 
- *                     |                              |  
- *                     |    struct PageInfo array     |  64*PGSIZE
- *        pages ---->  +------------------------------+ 
- *                     |                              | 
- *                     |     kernel page dirtory      |   PGSIZE
- *end, kern_pgdir--->  +------------------------------+ 
- *                     |                              | 
- *                     | kernel text, data, bootstack | 
- *                     |                              | 
- *    KERNBASE, ---->  +------------------------------+ 0xf0000000   
- * 
-*/
+
 // All physical memory mapped at this address
 #define	KERNBASE	0xF0000000
 

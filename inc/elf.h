@@ -3,27 +3,24 @@
 
 #define ELF_MAGIC 0x464C457FU	/* "\x7FELF" in little endian */
 
-//elf header
-struct Elf {                  
-	uint32_t e_magic;			//must equal ELF_MAGIC
-	uint8_t e_elf[12];   		//for identitification
-	uint16_t e_type; 	        //file type
-	uint16_t e_machine;		
+struct Elf {
+	uint32_t e_magic;	// must equal ELF_MAGIC
+	uint8_t e_elf[12];
+	uint16_t e_type;
+	uint16_t e_machine;
 	uint32_t e_version;
 	uint32_t e_entry;
-	uint32_t e_phoff;         	//program header offset
-	uint32_t e_shoff;		  	//section header offset
+	uint32_t e_phoff;
+	uint32_t e_shoff;
 	uint32_t e_flags;
-	uint16_t e_ehsize;			//elf header size
-	uint16_t e_phentsize;		//size in bytes of one entry in the file's program header table; 
-								//all entries are the same size.
-	uint16_t e_phnum;			//entries number in the program header table
+	uint16_t e_ehsize;
+	uint16_t e_phentsize;
+	uint16_t e_phnum;
 	uint16_t e_shentsize;
 	uint16_t e_shnum;
-	uint16_t e_shstrndx;		
+	uint16_t e_shstrndx;
 };
 
-//program header
 struct Proghdr {
 	uint32_t p_type;
 	uint32_t p_offset;
@@ -35,7 +32,6 @@ struct Proghdr {
 	uint32_t p_align;
 };
 
-//sector header
 struct Secthdr {
 	uint32_t sh_name;
 	uint32_t sh_type;

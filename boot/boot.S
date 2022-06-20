@@ -83,3 +83,11 @@ gdtdesc:
   .word   0x17                            # sizeof(gdt) - 1
   .long   gdt                             # address gdt
 
+
+
+
+
+
+
+
+
