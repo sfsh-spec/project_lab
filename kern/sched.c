@@ -21,8 +21,7 @@ sched_yield(void)
 	//
 	// If no envs are runnable, but the environment previously
 	// running on this CPU is still ENV_RUNNING, it's okay to
-	// choose that environment. Make sure curenv is not null before
-	// dereferencing it.
+	// choose that environment.
 	//
 	// Never choose an environment that's currently running on
 	// another CPU (env_status == ENV_RUNNING). If there are
@@ -30,8 +29,54 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	idle = thiscpu->cpu_env;
+	// cprintf("sched start\n");
+	cprintf("env to be idle: 0x%x\n", (u32)(idle));
+	struct Env *temp = envs;
+	if (idle == NULL)
+	{
+		// temp = envs;
+		int i = 0;
+		for (i = 0; i<NENV; i++)
+		{
+			// cprintf("status: 0x%x",(u32)((temp+i)->env_status));
+			if ((temp+i)->env_status == ENV_RUNNABLE)
+			{
+				cprintf("-----env %d\n", i);
+				env_run(temp+i);
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (temp = idle+1; temp < envs+NENV; temp++)
+			if (temp->env_status == ENV_RUNNABLE)
+			{	
+				cprintf("*****selected env: 0x%x\n", (u32)temp);
+				env_run(temp);
+				return;
+			}
 
+		for (temp = envs; temp < idle; temp++)
+			if (temp->env_status == ENV_RUNNABLE)
+			{	
+				cprintf("*****selected env: 0x%x\n", (u32)temp);
+				env_run(temp);
+				return;
+			}
+		
+		if (temp == idle)
+		{
+			if (temp->env_status == ENV_RUNNING)
+			{
+				cprintf("*****origin env\n");
+				env_run(temp);
+			}
+		}
+	}
 	// sched_halt never returns
+	cprintf("halt\n");
 	sched_halt();
 }
 
@@ -51,6 +96,7 @@ sched_halt(void)
 		     envs[i].env_status == ENV_DYING))
 			break;
 	}
+	// cprintf("iiii: %d\n", i);
 	if (i == NENV) {
 		cprintf("No runnable environments in the system!\n");
 		while (1)
@@ -76,7 +122,7 @@ sched_halt(void)
 		"pushl $0\n"
 		"pushl $0\n"
 		// Uncomment the following line after completing exercise 13
-		//"sti\n"
+		// "sti\n"
 		"1:\n"
 		"hlt\n"
 		"jmp 1b\n"

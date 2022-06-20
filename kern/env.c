@@ -21,6 +21,8 @@ static struct Env *env_free_list;	// Free environment list
 
 #define ENVGENSHIFT	12		// >= LOGNENV
 
+static int
+map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
 // Global descriptor table.
 //
 // Set up global descriptor table (GDT) with separate segments for
@@ -114,11 +116,25 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 // they are in the envs array (i.e., so that the first call to
 // env_alloc() returns envs[0]).
 //
+static struct Env *temp_ptr;
 void
 env_init(void)
 {
 	// Set up envs array
 	// LAB 3: Your code here.
+	for (int i = 0; i < NENV; i++)
+	{
+		envs[i].env_id = 0;
+		envs[i].env_status = ENV_FREE;
+	}
+
+	env_free_list = &envs[0];
+	temp_ptr = env_free_list;
+	for (int i = 1; i < NENV; i++)
+	{
+		temp_ptr->env_link = &envs[i];
+		temp_ptr = temp_ptr->env_link;
+	}
 
 	// Per-CPU part of the initialization
 	env_init_percpu();
@@ -182,11 +198,22 @@ env_setup_vm(struct Env *e)
 	//    - The functions in kern/pmap.h are handy.
 
 	// LAB 3: Your code here.
-
+	pde_t* dir = (pde_t*)page2kva(p);
+	cprintf("user pgdir: 0x%x\n",(u32)dir);
+	p->pp_ref++;
+	e->env_pgdir = dir;
+	e->env_pgdir[PDX(UENVS)] = kern_pgdir[PDX(UENVS)] | PTE_U;
+	e->env_pgdir[PDX(UPAGES)] = kern_pgdir[PDX(UPAGES)] | PTE_U;
+	e->env_pgdir[PDX(KSTACKTOP-KSTKSIZE)] = kern_pgdir[PDX(KSTACKTOP-KSTKSIZE)] | PTE_W;
+	e->env_pgdir[PDX(MMIOBASE)] = kern_pgdir[PDX(MMIOBASE)];
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
-
+	// e->env_pgdir[PDX(KERNBASE)] = PADDR((u32*)KERNBASE) | PTE_P;
+	boot_map_region(dir, KERNBASE, 0x10000000, 0x0, PTE_P | PTE_W);
+	// boot_map_region(dir, 0xf0114000, 0x6e900, 0x114000, PTE_W);
+	// boot_map_region(dir, 0xf0183000, 0x1000, 0x183000, PTE_W);
+	cprintf("env setup vm done\n");
 	return 0;
 }
 
@@ -228,7 +255,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// to prevent the register values
 	// of a prior environment inhabiting this Env structure
 	// from "leaking" into our new environment.
+	// cprintf("####memset\n");
 	memset(&e->env_tf, 0, sizeof(e->env_tf));
+	// cprintf("####memset done\n");
 
 	// Set up appropriate initial values for the segment registers.
 	// GD_UD is the user data segment selector in the GDT, and
@@ -247,7 +276,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
-
+	// e->env_tf.tf_eflags |= FL_IF;
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
 
@@ -258,7 +287,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	env_free_list = e->env_link;
 	*newenv_store = e;
 
-	// cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+	cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+	// cprintf("####4\n");
+	
 	return 0;
 }
 
@@ -279,6 +310,23 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
+	pa_t va_d = ROUNDDOWN((u32)va, PGSIZE);
+	pa_t va_u = ROUNDUP((u32)va + len, PGSIZE);
+	for (u32 s = va_d; s < va_u; s = s + PGSIZE)
+	{
+		pte_t *p = pgdir_walk(e->env_pgdir, (pa_t*)s, 1);
+		if (p)
+		{
+			struct PageInfo *p_alloc = page_alloc(ALLOC_NORMAL);
+			if (!p_alloc)
+				panic("page alloc fail");
+			*p = page2pa(p_alloc) | PTE_P | PTE_W | PTE_U;
+		}
+		else
+		{
+			panic("page table alloc fail");
+		}
+	}
 }
 
 //
@@ -335,11 +383,68 @@ load_icode(struct Env *e, uint8_t *binary)
 	//  What?  (See env_run() and env_pop_tf() below.)
 
 	// LAB 3: Your code here.
+	struct Elf *elf_ptr = (struct Elf *)binary;
+	cprintf("entry 0x%x, phoff 0x%x, phnum 0x%x\n", 
+		elf_ptr->e_entry,elf_ptr->e_phoff, elf_ptr->e_phnum);
+	struct Proghdr *temp, *end;
+	temp = (struct Proghdr *)((uint8_t*)elf_ptr + elf_ptr->e_phoff);
+	end = temp+elf_ptr->e_phnum;
+	// cprintf("phnum: 0x%x\n", elf_ptr->e_phnum);
 
+	for (;temp<end;temp++)
+	{
+		// cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
+		// temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
+		if (temp->p_type != ELF_PROG_LOAD)
+		{
+			// cprintf("non load segment\n");
+			continue;
+		}
+		// cprintf("p_va 0x%x\n", temp->p_va);
+		u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
+		// cprintf("needed page number 0x%x\n", pg_num);
+		for (u32 i = 0; i<pg_num;i++)
+		{
+			struct PageInfo *p = page_alloc(ALLOC_ZERO);
+			if (!p)
+				panic("program page alloc fail");
+			page_insert(kern_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W|PTE_U);
+			e->env_pgdir[PDX(temp->p_va + PGSIZE*i)] = kern_pgdir[PDX(temp->p_va + PGSIZE*i)];
+			// page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
+		}
+
+		// cprintf("finish\n");
+		memcpy((uint8_t*)temp->p_va, (uint8_t*)elf_ptr + temp->p_offset, temp->p_filesz);
+		// cprintf("round 0x%x\n", (u32)temp);
+	}
+
+	temp = (struct Proghdr *)((uint8_t*)elf_ptr + elf_ptr->e_phoff);
+	for (; temp<end;temp++)
+	{	
+		if (temp->p_type != ELF_PROG_LOAD)
+		{
+			// cprintf("non load segment\n");
+			continue;
+		}
+
+		u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
+		for (u32 i = 0; i<pg_num; i++)
+		{
+			kern_pgdir[PDX(temp->p_va + PGSIZE*i)] = 0;
+		}
+	}
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
+	// cprintf("alloc stack\n");
+	struct PageInfo *p_stk = page_alloc(ALLOC_ZERO);
+	if (!p_stk)
+		panic("stack page alloc fail");
+	page_insert(e->env_pgdir, p_stk, (u32*)(USTACKTOP-PGSIZE), PTE_W | PTE_U);
+	e->env_tf.tf_esp = USTACKTOP-16;
+	cprintf("alloc stack done\n");
+	e->env_tf.tf_eip = elf_ptr->e_entry; 
 }
 
 //
@@ -353,6 +458,11 @@ void
 env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
+	struct Env *new = NULL;
+	int ret = env_alloc(&new, 0);
+	cprintf("env alloc done. new_env: 0x%x\n", (u32)new);
+	load_icode(new, binary);
+	cprintf("load icode done\n");
 
 	// If this is the file server (type == ENV_TYPE_FS) give it I/O privileges.
 	// LAB 5: Your code here.
@@ -486,7 +596,52 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
+	// cprintf("env run start\n");
+	if (curenv)
+	{
+		if (curenv->env_status == ENV_RUNNING)
+			curenv->env_status = ENV_RUNNABLE;
+	}
+	
+	curenv = e;
+	e->env_status = ENV_RUNNING;	
+	e->env_runs++;
+	// cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
+	// cprintf("env pgdir %p\n", e->env_pgdir);
+	cprintf("unlock\n");
+	lcr3(PADDR(e->env_pgdir));
+	unlock_kernel();
+	// cprintf("gogogo\n");
+	env_pop_tf(&e->env_tf);
+	// panic("env_run not yet implemented");
+}
 
-	panic("env_run not yet implemented");
+static int
+map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+{
+	u32 start = ROUNDDOWN(va, PGSIZE);
+	u32 end = ROUNDUP(va+size,PGSIZE);
+	for (u32 i = 0; i< (end-start)/PGSIZE; i++)
+	{
+		pte_t *t = pgdir_walk(pgdir, (u32*)(start+i*PGSIZE), 1);
+		if (!t)
+		{
+			cprintf("alloc pt fail\n");
+			return -1;
+		}
+		else
+		{
+			if (*t & PTE_P)
+			{
+				cprintf("remap\n");
+				return -2;
+			}
+		}
+		cprintf("*t before 0x%x\n", *t);
+		*t = (pa+PGSIZE*i) | PTE_P | perm;
+		cprintf("*t after 0x%x\n", *t);
+	}
+	cprintf("map region done\n");
+	return 0;
 }
 
