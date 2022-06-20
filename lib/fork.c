@@ -25,12 +25,6 @@ pgfault(struct UTrapframe *utf)
 	//   (see <inc/memlayout.h>).
 
 	// LAB 4: Your code here.
-	if ((err & FEC_WR) == 0)
-		panic("not write page fault\n");
-	
-	u32 *uvptab = (u32*)uvpt;
-	if ((uvptab[(u32)addr >> PGSHIFT] & PTE_COW) == 0)
-		panic("not copy on write page\n");
 
 	// Allocate a new page, map it at a temporary location (PFTEMP),
 	// copy the data from the old page to the new page, then move the new
@@ -39,19 +33,8 @@ pgfault(struct UTrapframe *utf)
 	//   You should make three system calls.
 
 	// LAB 4: Your code here.
-	r = sys_page_alloc(0, PFTEMP, PTE_P | PTE_U | PTE_W);
-	if (r != 0)
-		panic("alloc page fail");
-	
-	memmove((void*)PFTEMP, (void*)ROUNDDOWN(addr, PGSIZE), PGSIZE);
-	r = sys_page_map(0, (void*)PFTEMP, 0, (void*)ROUNDDOWN(addr, PGSIZE), PTE_P | PTE_U | PTE_W);
-	if (r != 0)
-		panic("pgfault handle, map page fail. rounddown addr: 0x%x\n", ROUNDDOWN(addr, PGSIZE));
 
-	r = sys_page_unmap(0, (void*)PFTEMP);
-	if (r != 0)
-		panic("ummap page fail\n");
-	// panic("pgfault not implemented");
+	panic("pgfault not implemented");
 }
 
 //
@@ -68,37 +51,11 @@ pgfault(struct UTrapframe *utf)
 static int
 duppage(envid_t envid, unsigned pn)
 {
-	// cprintf("dupe page start\n");	
 	int r;
-	u32 val1, val2;
-	u32 *uvpdir = (u32*)uvpd;
-	u32 *uvptab = (u32*)uvpt;
-	if ((uvpdir[pn >> 10] & PTE_P) == 0 )
-		panic("page %d does not exist in current address space\n", pn);
-	if ((uvptab[pn] & PTE_P) == 0)
-		panic("page %d does not exist in current address space\n", pn);
-	int perm = PTE_P | PTE_U; 
-	val1 = uvptab[pn] & PTE_W;
-	val2 = uvptab[pn] & PTE_COW;
-	// cprintf("val1: %d val2: %d\n", val1, val2);
-	if (( val1 > 0) || (val2 > 0)) 
-		perm |= PTE_COW; 
 
-	r = sys_page_map(0, (void*)(pn*PGSIZE), envid, (void*)(pn*PGSIZE), perm);
-	if (r != 0)
-		panic("page map fail\n");
-	// cprintf("map success. envid: 0x%x, page num: 0x%x, perm: 0x%x\n", envid, pn, perm);
-	// val1 = perm & PTE_COW;
-	if (val1 > 0|| val2 > 0)
-	{
-		// cprintf("remap own. page num: 0x%x, perm: 0x%x\n", pn, perm);
-		r = sys_page_map(0, (void*)(pn*PGSIZE), 0, (void*)(pn*PGSIZE), perm);
-		if (r != 0)
-			panic("page map fail. own\n");
-	}
 	// LAB 4: Your code here.
-	// panic("duppage not implemented");
-	return r;
+	panic("duppage not implemented");
+	return 0;
 }
 
 //
@@ -121,58 +78,7 @@ envid_t
 fork(void)
 {
 	// LAB 4: Your code here.
-	set_pgfault_handler(pgfault);
-	envid_t child = sys_exofork();
-	if (child < 0)
-		return -1; //error
-
-	if (child == 0) {
-		// We're the child.
-		// The copied value of the global variable 'thisenv'
-		// is no longer valid (it refers to the parent!).
-		// Fix it and return 0.
-		thisenv = &envs[ENVX(sys_getenvid())];
-		return 0;
-	}
-	int ret = sys_page_alloc(child, (void*)(UXSTACKTOP-PGSIZE), PTE_P|PTE_U|PTE_W);
-	if (ret < 0)
-		panic("alloc page fail");
-
-	extern volatile pte_t uvpt[];     // VA of "virtual page table"
-	extern volatile pde_t uvpd[];     // VA of current page directory
-	extern void _pgfault_upcall(void);
-	// cprintf("see see upcall 0x%p\n", _pgfault_upcall);
-	u32 *uvpdir = (u32*)uvpd;
-	u32 *uvptab = (u32*)uvpt;
-	u32 pn;
-	cprintf("alloc child xstack done\n");
-	for (pn = 0; pn < (UTOP-PGSIZE)/PGSIZE; pn++)
-	{
-		if ((uvpdir[pn>>10] & PTE_P) == 0)
-		{
-			continue;
-		}
-		else
-		{
-			if ((uvptab[pn] & PTE_P) == 0)
-				continue;
-			else
-			{
-				// cprintf("dupe page num: 0x%x\n", pn);
-				duppage(child, pn);
-			}
-		}
-	}
-
-	cprintf("whole dupe done. upcall 0x%x\n", (u32)_pgfault_upcall);
-	if ((ret = sys_env_set_pgfault_upcall(child, (void *)_pgfault_upcall)) < 0)
-		panic("sys_env_set_pgfault_upcall: %e", ret);
-
-	if ((ret = sys_env_set_status(child, ENV_RUNNABLE)) < 0)
-		panic("sys_env_set_status: %e", ret);
-	cprintf("fork done\n");
-	return child;
-	// panic("fork not implemented");
+	panic("fork not implemented");
 }
 
 // Challenge!

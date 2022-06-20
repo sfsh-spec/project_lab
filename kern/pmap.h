@@ -17,12 +17,6 @@ extern size_t npages;
 
 extern pde_t *kern_pgdir;
 
-extern struct PageInfo *free_list_debug;
-extern size_t pg_cnt;
-//unit is 4K
-#define PAGE_START   1   //for page_init
-#define PAGES_SIZE   64  //128M total memory size, page size: 4K, entry size of a page: 8B 
-#define ENVS_SIZE    24  //envs_size = NENV * sizeof(struct Env) / PGSIZE = 24 
 
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --
@@ -55,7 +49,6 @@ _kaddr(const char *file, int line, physaddr_t pa)
 enum {
 	// For page_alloc, zero the returned physical page.
 	ALLOC_ZERO = 1<<0,
-	ALLOC_NORMAL = 1<<1,
 };
 
 void	mem_init(void);
@@ -73,8 +66,7 @@ void	tlb_invalidate(pde_t *pgdir, void *va);
 void *	mmio_map_region(physaddr_t pa, size_t size);
 
 int	user_mem_check(struct Env *env, const void *va, size_t len, int perm);
-void user_mem_assert(struct Env *env, const void *va, size_t len, int perm);
-void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
+void	user_mem_assert(struct Env *env, const void *va, size_t len, int perm);
 
 static inline physaddr_t
 page2pa(struct PageInfo *pp)

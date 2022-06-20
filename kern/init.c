@@ -17,6 +17,7 @@
 
 static void boot_aps(void);
 
+
 void
 i386_init(void)
 {
@@ -26,18 +27,14 @@ i386_init(void)
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
 
-	cprintf("######stk top 0x%x\n", bootstacktop);
 	// Lab 2 memory management initialization functions
 	mem_init();
-	// cprintf("why is make warning\n");
+
 	// Lab 3 user environment initialization functions
-	cprintf("struct Env size %d\n", sizeof(struct Env));
 	env_init();
-	cprintf("env init done\n");
 	trap_init();
 
 	// Lab 4 multiprocessor initialization functions
-
 	mp_init();
 	lapic_init();
 
@@ -46,20 +43,23 @@ i386_init(void)
 
 	// Acquire the big kernel lock before waking up APs
 	// Your code here:
-	lock_kernel();
+
 	// Starting non-boot CPUs
 	boot_aps();
+
+	// Start fs.
+	ENV_CREATE(fs_fs, ENV_TYPE_FS);
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(user_spin, ENV_TYPE_USER);
-	// ENV_CREATE(user_yield, ENV_TYPE_USER);
-	// ENV_CREATE(user_yield, ENV_TYPE_USER);
-	// ENV_CREATE(user_yield, ENV_TYPE_USER);
+	ENV_CREATE(user_icode, ENV_TYPE_USER);
 #endif // TEST*
+
+	// Should not be necessary - drains keyboard because interrupt has given up.
+	kbd_intr();
 
 	// Schedule and run the first user environment!
 	sched_yield();
@@ -115,10 +115,9 @@ mp_main(void)
 	// only one CPU can enter the scheduler at a time!
 	//
 	// Your code here:
-	lock_kernel();
-	sched_yield();
+
 	// Remove this after you finish Exercise 6
-	// for (;;);
+	for (;;);
 }
 
 /*
