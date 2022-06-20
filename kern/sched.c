@@ -30,7 +30,7 @@ sched_yield(void)
 
 	// LAB 4: Your code here.
 	idle = thiscpu->cpu_env;
-	cprintf("sched start\n");
+	// cprintf("sched start\n");
 	cprintf("env to be idle: 0x%x\n", (u32)(idle));
 	struct Env *temp = envs;
 	if (idle == NULL)
@@ -122,7 +122,7 @@ sched_halt(void)
 		"pushl $0\n"
 		"pushl $0\n"
 		// Uncomment the following line after completing exercise 13
-		"sti\n"
+		// "sti\n"
 		"1:\n"
 		"hlt\n"
 		"jmp 1b\n"

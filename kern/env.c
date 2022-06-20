@@ -255,9 +255,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// to prevent the register values
 	// of a prior environment inhabiting this Env structure
 	// from "leaking" into our new environment.
-	cprintf("####memset\n");
+	// cprintf("####memset\n");
 	memset(&e->env_tf, 0, sizeof(e->env_tf));
-	cprintf("####memset done\n");
+	// cprintf("####memset done\n");
 
 	// Set up appropriate initial values for the segment registers.
 	// GD_UD is the user data segment selector in the GDT, and
@@ -276,7 +276,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
-	e->env_tf.tf_eflags |= FL_IF;
+	// e->env_tf.tf_eflags |= FL_IF;
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
 
@@ -610,7 +610,7 @@ env_run(struct Env *e)
 	curenv = e;
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
-	cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
+	// cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
 	// cprintf("env pgdir %p\n", e->env_pgdir);
 	cprintf("unlock\n");
 	lcr3(PADDR(e->env_pgdir));

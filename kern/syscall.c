@@ -252,7 +252,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	if ((perm & (~PTE_SYSCALL)) != 0)
 		return -E_INVAL;
 	// void *kva = (void *)*pte_store;
-	cprintf("sys page map. pte_store: 0x%x\n", (u32)pte_store);
+	// cprintf("sys page map. pte_store: 0x%x\n", (u32)pte_store);
 	int ret = page_insert(d_store->env_pgdir, pa2page(*pte_store), dstva, perm);
 	if (ret != 0)
 		return -E_NO_MEM;
@@ -333,8 +333,9 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		return -E_BAD_ENV;
 	if (store->env_ipc_recving == false)
 		return -E_IPC_NOT_RECV;
-	if (store->env_ipc_from  != 0)
-		return -E_IPC_NOT_RECV;
+	// cprintf("22222222\n");
+	// if (store->env_ipc_from  != 0)
+	// 	return -E_IPC_NOT_RECV;
 	pte_t val; 
 	store->env_ipc_perm = 0;
 	void *dstva = store->env_ipc_dstva;
@@ -347,16 +348,19 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 
 			pte_t *entry = pgdir_walk(curenv->env_pgdir, srcva, 0);
 			if (entry == NULL)
+			{
 				return -E_INVAL;
+			}
 			else	
 			{
 				u32 w = perm & PTE_W;
 				val = *entry;
+				// cprintf("val 0x%x\n", val);
 				if ((val & PTE_W) == 0 && (perm & PTE_W) != 0)
 					return -E_INVAL;
 				if ((val & PTE_U) == 0)	
 					return -E_INVAL;
-				if (((val & 0xfff) & (~PTE_SYSCALL)) != 0)
+				if (((val & 0xf0f) & (~PTE_SYSCALL)) != 0)
 					return -E_INVAL;
 			}
 			struct PageInfo *pp = pa2page(val);
@@ -370,7 +374,8 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	store->env_ipc_from = curenv->env_id;
 	store->env_ipc_recving = false;
 	store->env_status = ENV_RUNNABLE;
-	store->env_tf.tf_regs.reg_eax = 0;
+	// store->env_tf.tf_regs.reg_eax = 0;
+	// curenv->env_tf.tf_regs.reg_eax = 0;
 	return 0;
 	//panic("sys_ipc_try_send not implemented");
 }
@@ -400,6 +405,7 @@ sys_ipc_recv(void *dstva)
 	}
 
 	curenv->env_ipc_dstva = dstva;
+	curenv->env_tf.tf_regs.reg_eax = 0;
 	return 0;
 	// panic("sys_ipc_recv not implemented");
 }
@@ -434,32 +440,32 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 
 		case SYS_exofork:
 			int ret1 = sys_exofork();
-			 cprintf("~~~~~exofork return: 0x%x\n", ret1);
+			//  cprintf("~~~~~exofork return: 0x%x\n", ret1);
 			return ret1;
 
 		case SYS_page_alloc:
 			int ret2 = sys_page_alloc(a1, (void*)a2, (int)a3);
-			cprintf("~~~~~page alloc return: %d\n", ret2);
+			// cprintf("~~~~~page alloc return: %d\n", ret2);
 			return ret2;
 
 		case SYS_page_map:
 			int ret = sys_page_map(a1, (void*)a2, a3, (void*)a4, (int)a5);
-			cprintf("~~~~~page map return: %d\n", ret);
+			// cprintf("~~~~~page map return: %d\n", ret);
 			return ret;
 
 		case SYS_page_unmap:
 			int ret3 = sys_page_unmap(a1, (void*)a2);
-			cprintf("~~~~~page ummap return: %d\n", ret3);
+			// cprintf("~~~~~page ummap return: %d\n", ret3);
 			return ret3;
 
 		case SYS_env_set_status:
 			int ret4 = sys_env_set_status(a1, (int)a2);
-			cprintf("~~~~~env set status return: %d\n", ret4);
+			// cprintf("~~~~~env set status return: %d\n", ret4);
 			return ret4;
 		
 		case SYS_env_set_pgfault_upcall:
 			int ret5 = sys_env_set_pgfault_upcall(a1, (void*)a2);
-			cprintf("~~~~~env set pgfault upcall return: %d\n", ret5);
+			// cprintf("~~~~~env set pgfault upcall return: %d\n", ret5);
 			return ret5;
 
 		case SYS_ipc_try_send:

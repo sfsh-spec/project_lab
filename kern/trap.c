@@ -234,9 +234,9 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	u32 trap_num = tf->tf_trapno;
 	const char *t_name = trapname(trap_num);
-	cprintf("CPU: %d ", cpunum());
-	cprintf("Trap frame at %p\n", tf);
-	cprintf("  trap 0x%08x %s\n", trap_num, t_name);
+	// cprintf("CPU: %d ", cpunum());
+	// cprintf("Trap frame at %p\n", tf);
+	// cprintf("  trap 0x%08x %s\n", trap_num, t_name);
 	// print_trapframe(tf);
 	
 	switch (trap_num)
@@ -319,7 +319,7 @@ trap(struct Trapframe *tf)
 		// LAB 4: Your code here.
 		lock_kernel();
 		assert(curenv);
-		cprintf("user mode trap\n");
+		// cprintf("user mode trap\n");
 		// Garbage collect if current enviroment is a zombie
 		if (curenv->env_status == ENV_DYING) {
 			env_free(curenv);
@@ -402,9 +402,9 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
-	cprintf("handle user page fault trap frame start\n");
-	cprintf("fault va: 0x%x\n", fault_va);
-	cprintf("upcall: 0x%x\n", (u32)curenv->env_pgfault_upcall);
+	// cprintf("handle user page fault trap frame start\n");
+	// cprintf("fault va: 0x%x\n", fault_va);
+	// cprintf("upcall: 0x%x\n", (u32)curenv->env_pgfault_upcall);
 	if (curenv->env_pgfault_upcall != NULL)
 	{
 		if (tf->tf_esp < USTACKTOP)
