@@ -439,42 +439,50 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			return 0;
 
 		case SYS_exofork:
-			int ret1 = sys_exofork();
+			int ret1; 
+			ret1 = sys_exofork();
 			//  cprintf("~~~~~exofork return: 0x%x\n", ret1);
 			return ret1;
 
 		case SYS_page_alloc:
-			int ret2 = sys_page_alloc(a1, (void*)a2, (int)a3);
+			int ret2; 
+			ret2 = sys_page_alloc(a1, (void*)a2, (int)a3);
 			// cprintf("~~~~~page alloc return: %d\n", ret2);
 			return ret2;
 
 		case SYS_page_map:
-			int ret = sys_page_map(a1, (void*)a2, a3, (void*)a4, (int)a5);
+			int ret;
+			ret  = sys_page_map(a1, (void*)a2, a3, (void*)a4, (int)a5);
 			// cprintf("~~~~~page map return: %d\n", ret);
 			return ret;
 
 		case SYS_page_unmap:
-			int ret3 = sys_page_unmap(a1, (void*)a2);
+			int ret3;
+			ret3  = sys_page_unmap(a1, (void*)a2);
 			// cprintf("~~~~~page ummap return: %d\n", ret3);
 			return ret3;
 
 		case SYS_env_set_status:
-			int ret4 = sys_env_set_status(a1, (int)a2);
+			int ret4;
+			ret4  = sys_env_set_status(a1, (int)a2);
 			// cprintf("~~~~~env set status return: %d\n", ret4);
 			return ret4;
 		
 		case SYS_env_set_pgfault_upcall:
-			int ret5 = sys_env_set_pgfault_upcall(a1, (void*)a2);
+			int ret5;
+			ret5  = sys_env_set_pgfault_upcall(a1, (void*)a2);
 			// cprintf("~~~~~env set pgfault upcall return: %d\n", ret5);
 			return ret5;
 
 		case SYS_ipc_try_send:
-			int ret6 = sys_ipc_try_send(a1, a2, (void*)a3, a4);
+			int ret6;
+			ret6  = sys_ipc_try_send(a1, a2, (void*)a3, a4);
 			cprintf("~~~~~ipc try send return: %d\n", ret6);
 			return ret6;
 
 		case SYS_ipc_recv:
-			int ret7 = sys_ipc_recv((void*)a1);
+			int ret7;
+			ret7  = sys_ipc_recv((void*)a1);
 			cprintf("~~~~~ipc recv return: %d\n", ret7);
 			return ret7;
 
