@@ -298,6 +298,7 @@ trap(struct Trapframe *tf)
 	asm volatile("cld" ::: "cc");
 
 	// Halt the CPU if some other CPU has called panic()
+	cprintf("trap num: 0x%x\n", tf->tf_trapno);
 	extern char *panicstr;
 	if (panicstr)
 		asm volatile("hlt");
