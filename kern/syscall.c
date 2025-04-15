@@ -39,7 +39,7 @@ sys_cgetc(void)
 static envid_t
 sys_getenvid(void)
 {
-	cprintf("-----getenvid----- 0x%x\n", (u32)curenv);
+	cprintf("-----getenvid----- 0x%x cpu %d\n", (u32)curenv, thiscpu->cpu_id);
 	return curenv->env_id;
 }
 
@@ -87,7 +87,7 @@ sys_exofork(void)
 	// LAB 4: Your code here.
 	struct Env *new;
 	int ret = env_alloc(&new, curenv->env_id);
-	cprintf("env alloc ret: %d\n", ret);
+	// cprintf("env alloc ret: %d\n", ret);
 	if (ret < 0)
 		return ret;
 	new->env_status = ENV_NOT_RUNNABLE;
@@ -470,12 +470,12 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 
 		case SYS_ipc_try_send:
 			int ret6 = sys_ipc_try_send(a1, a2, (void*)a3, a4);
-			cprintf("~~~~~ipc try send return: %d\n", ret6);
+			// cprintf("~~~~~ipc try send return: %d\n", ret6);
 			return ret6;
 
 		case SYS_ipc_recv:
 			int ret7 = sys_ipc_recv((void*)a1);
-			cprintf("~~~~~ipc recv return: %d\n", ret7);
+			// cprintf("~~~~~ipc recv return: %d\n", ret7);
 			return ret7;
 
 		default:

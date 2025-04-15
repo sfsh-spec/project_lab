@@ -145,7 +145,7 @@ fork(void)
 	u32 *uvpdir = (u32*)uvpd;
 	u32 *uvptab = (u32*)uvpt;
 	u32 pn;
-	cprintf("alloc child xstack done\n");
+	// cprintf("alloc child xstack done\n");
 	for (pn = 0; pn < (UTOP-PGSIZE)/PGSIZE; pn++)
 	{
 		if ((uvpdir[pn>>10] & PTE_P) == 0)

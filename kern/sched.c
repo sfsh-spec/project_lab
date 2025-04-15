@@ -31,7 +31,7 @@ sched_yield(void)
 	// LAB 4: Your code here.
 	idle = thiscpu->cpu_env;
 	// cprintf("sched start\n");
-	cprintf("env to be idle: 0x%x\n", (u32)(idle));
+	// cprintf("env to be idle: 0x%x, cpu %d\n", (u32)(idle), thiscpu->cpu_id);
 	struct Env *temp = envs;
 	if (idle == NULL)
 	{
@@ -53,7 +53,7 @@ sched_yield(void)
 		for (temp = idle+1; temp < envs+NENV; temp++)
 			if (temp->env_status == ENV_RUNNABLE)
 			{	
-				cprintf("*****selected env: 0x%x\n", (u32)temp);
+				// cprintf("*****selected env: 0x%x\n", (u32)temp);
 				env_run(temp);
 				return;
 			}
@@ -61,7 +61,7 @@ sched_yield(void)
 		for (temp = envs; temp < idle; temp++)
 			if (temp->env_status == ENV_RUNNABLE)
 			{	
-				cprintf("*****selected env: 0x%x\n", (u32)temp);
+				// cprintf("*****selected env: 0x%x\n", (u32)temp);
 				env_run(temp);
 				return;
 			}
@@ -70,7 +70,7 @@ sched_yield(void)
 		{
 			if (temp->env_status == ENV_RUNNING)
 			{
-				cprintf("*****origin env\n");
+				// cprintf("*****origin env\n");
 				env_run(temp);
 			}
 		}
@@ -122,7 +122,7 @@ sched_halt(void)
 		"pushl $0\n"
 		"pushl $0\n"
 		// Uncomment the following line after completing exercise 13
-		// "sti\n"
+		"sti\n"
 		"1:\n"
 		"hlt\n"
 		"jmp 1b\n"

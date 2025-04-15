@@ -555,7 +555,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 			return -E_NO_MEM;
 		}
 		physaddr_t padd = page2pa(pg_ptr);
-		cprintf("alloc page table p addr: 0x%x\n", padd);
+		// cprintf("alloc page table p addr: 0x%x\n", padd);
 		pgdir[PDX(va)] = padd | PTE_P | perm;
 		pg_ptr->pp_ref++;
 		uintptr_t *kadd = (uintptr_t*)KADDR(padd);
