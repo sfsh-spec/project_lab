@@ -43,8 +43,8 @@ struct Dir
 
 uint32_t nblocks;
 char *diskmap, *diskpos;
-struct Super *super;
-uint32_t *bitmap;
+struct Super *init_super;
+uint32_t *init_bitmap;
 
 void
 panic(const char *fmt, ...)
@@ -108,15 +108,15 @@ opendisk(const char *name)
 
 	diskpos = diskmap;
 	alloc(BLKSIZE);
-	super = alloc(BLKSIZE);
-	super->s_magic = FS_MAGIC;
-	super->s_nblocks = nblocks;
-	super->s_root.f_type = FTYPE_DIR;
-	strcpy(super->s_root.f_name, "/");
+	init_super = alloc(BLKSIZE);
+	init_super->s_magic = FS_MAGIC;
+	init_super->s_nblocks = nblocks;
+	init_super->s_root.f_type = FTYPE_DIR;
+	strcpy(init_super->s_root.f_name, "/");
 
 	nbitblocks = (nblocks + BLKBITSIZE - 1) / BLKBITSIZE;
-	bitmap = alloc(nbitblocks * BLKSIZE);
-	memset(bitmap, 0xFF, nbitblocks * BLKSIZE);
+	init_bitmap = alloc(nbitblocks * BLKSIZE);
+	memset(init_bitmap, 0xFF, nbitblocks * BLKSIZE);
 }
 
 void
@@ -125,7 +125,7 @@ finishdisk(void)
 	int r, i;
 
 	for (i = 0; i < blockof(diskpos); ++i)
-		bitmap[i/32] &= ~(1<<(i%32));
+		init_bitmap[i/32] &= ~(1<<(i%32));
 
 	if ((r = msync(diskmap, nblocks * BLKSIZE, MS_SYNC)) < 0)
 		panic("msync: %s", strerror(errno));
@@ -233,7 +233,7 @@ main(int argc, char **argv)
 
 	opendisk(argv[1]);
 
-	startdir(&super->s_root, &root);
+	startdir(&init_super->s_root, &root);
 	for (i = 3; i < argc; i++)
 		writefile(&root, argv[i]);
 	finishdir(&root);

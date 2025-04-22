@@ -8,6 +8,8 @@
 
 #include "fs.h"
 
+extern struct Super *super;		// superblock
+extern uint32_t *bitmap;		// bitmap blocks mapped in memory
 
 #define debug 0
 

@@ -103,7 +103,7 @@ trap_init(void)
 	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
 	SETGATE(idt[T_DEBUG], 1, GD_KT, t_debug, 1)
 	SETGATE(idt[T_NMI], 1, GD_KT, t_nmi, 3)
-	SETGATE(idt[T_BRKPT], 1, GD_KT, t_brkpt, 3)
+	SETGATE(idt[T_BRKPT], 0, GD_KT, t_brkpt, 3)
 	SETGATE(idt[T_OFLOW], 1, GD_KT, t_oflow, 3)
 	SETGATE(idt[T_BOUND], 1, GD_KT, t_bound, 1)
 	SETGATE(idt[T_ILLOP], 1, GD_KT, t_illop, 1)
@@ -255,7 +255,7 @@ trap_dispatch(struct Trapframe *tf)
 			return;
 		
 		case T_SYSCALL:
-			cprintf("syscall num: 0x%x\n",tf->tf_regs.reg_eax);
+			// cprintf("syscall num: 0x%x\n",tf->tf_regs.reg_eax);
 			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 				tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret;
@@ -269,7 +269,7 @@ trap_dispatch(struct Trapframe *tf)
 	switch (trap_num)
 	{
 		case (IRQ_TIMER + IRQ_OFFSET):
-			cprintf("clock interrupt\n");
+			// cprintf("clock interrupt\n");
 			lapic_eoi();
 			sched_yield();
 			return;

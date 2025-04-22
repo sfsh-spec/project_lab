@@ -69,7 +69,7 @@ struct Trapframe {
 	uint16_t tf_padding3;
 	uint32_t tf_eflags;
 	/* below here only when crossing rings, such as from user to kernel */
-	uintptr_t tf_esp;
+	uintptr_t tf_esp __attribute__((aligned(4)));
 	uint16_t tf_ss;
 	uint16_t tf_padding4;
 } __attribute__((packed));

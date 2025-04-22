@@ -7,6 +7,8 @@
 #include "fs.h"
 #include <inc/x86.h>
 
+extern struct Super *super;		// superblock
+extern uint32_t *bitmap;		// bitmap blocks mapped in memory
 #define IDE_BSY		0x80
 #define IDE_DRDY	0x40
 #define IDE_DF		0x20

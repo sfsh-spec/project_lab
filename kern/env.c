@@ -74,6 +74,7 @@ struct Pseudodesc gdt_pd = {
 //   On success, sets *env_store to the environment.
 //   On error, sets *env_store to NULL.
 //
+
 int
 envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 {
@@ -199,7 +200,7 @@ env_setup_vm(struct Env *e)
 
 	// LAB 3: Your code here.
 	pde_t* dir = (pde_t*)page2kva(p);
-	cprintf("user pgdir: 0x%x\n",(u32)dir);
+	// cprintf("user pgdir: 0x%x\n",(u32)dir);
 	p->pp_ref++;
 	e->env_pgdir = dir;
 	e->env_pgdir[PDX(UENVS)] = kern_pgdir[PDX(UENVS)] | PTE_U;
@@ -209,11 +210,14 @@ env_setup_vm(struct Env *e)
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
-	// e->env_pgdir[PDX(KERNBASE)] = PADDR((u32*)KERNBASE) | PTE_P;
-	boot_map_region(dir, KERNBASE, 0x10000000, 0x0, PTE_P | PTE_W);
+    for (int i = 0; i < 0x10000000/PTSIZE; i++)
+    {
+        e->env_pgdir[PDX(KERNBASE + PTSIZE * i)] = kern_pgdir[PDX(KERNBASE + PTSIZE * i)];
+    }
+	// boot_map_region(dir, KERNBASE, 0x10000000, 0x0, PTE_P | PTE_W);
 	// boot_map_region(dir, 0xf0114000, 0x6e900, 0x114000, PTE_W);
 	// boot_map_region(dir, 0xf0183000, 0x1000, 0x183000, PTE_W);
-	cprintf("env setup vm done\n");
+	// cprintf("env setup vm done\n");
 	return 0;
 }
 
@@ -276,7 +280,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
-	// e->env_tf.tf_eflags |= FL_IF;
+	e->env_tf.tf_eflags |= FL_IF;
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
 
@@ -460,10 +464,11 @@ env_create(uint8_t *binary, enum EnvType type)
 	// LAB 3: Your code here.
 	struct Env *new = NULL;
 	int ret = env_alloc(&new, 0);
-	cprintf("env alloc done. new_env: 0x%x\n", (u32)new);
+	// cprintf("env alloc done. new_env: 0x%x\n", (u32)new);
 	load_icode(new, binary);
 	cprintf("load icode done\n");
 
+    new->env_type = type;
 	// If this is the file server (type == ENV_TYPE_FS) give it I/O privileges.
 	// LAB 5: Your code here.
 }
@@ -485,7 +490,7 @@ env_free(struct Env *e)
 		lcr3(PADDR(kern_pgdir));
 
 	// Note the environment's demise.
-	// cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
 	// Flush all mapped pages in the user portion of the address space
 	static_assert(UTOP % PTSIZE == 0);
@@ -608,7 +613,7 @@ env_run(struct Env *e)
 	e->env_runs++;
 	// cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
 	// cprintf("env pgdir %p\n", e->env_pgdir);
-	cprintf("unlock\n");
+	// cprintf("unlock\n");
 	lcr3(PADDR(e->env_pgdir));
 	unlock_kernel();
 	// cprintf("gogogo\n");
@@ -644,4 +649,3 @@ map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 	cprintf("map region done\n");
 	return 0;
 }
-
