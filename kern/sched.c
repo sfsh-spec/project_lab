@@ -70,7 +70,7 @@ sched_yield(void)
 		{
 			if (temp->env_status == ENV_RUNNING)
 			{
-				// cprintf("*****origin env\n");
+				// cprintf("run origin env\n");
 				env_run(temp);
 			}
 		}

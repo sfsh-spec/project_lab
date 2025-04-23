@@ -462,8 +462,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 			if (pg)
 			{	
 				pg->pp_ref++;
-				pgdir[PDX(va)] = page2pa(pg)|PTE_P | PTE_U;
-				// cprintf("alloc pg tab entry: 0x%x\n", page2pa(pg)|PTE_P);
+				pgdir[PDX(va)] = page2pa(pg)|PTE_P | PTE_U | PTE_W;
 				return  (pte_t*)(KADDR(page2pa(pg))) + PTX(va);
 			}
 			else
@@ -475,11 +474,8 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	else
 	{
 		uintptr_t *pt_addr = (uintptr_t*)(KADDR(PTE_ADDR(pd_entry)));
-		
 		return pt_addr+PTX(va);
-		
 	}
-	//return NULL;
 }
 
 //
@@ -544,34 +540,33 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
 	// cprintf("page insert\n");
-	pte_t *pte_ptr = pgdir_walk(pgdir, va, 0);
-	if (!pte_ptr)
+	pte_t *pte_ptr = pgdir_walk(pgdir, va, 1);
+	if (pte_ptr == NULL)
 	{
 		// cprintf("page insert alloc\n");
-		struct PageInfo * pg_ptr = page_alloc(ALLOC_ZERO);
-		if (!pg_ptr)
-		{
-			cprintf("alloc fail\n");
+		// struct PageInfo * pg_ptr = page_alloc(ALLOC_ZERO);
+		// if (!pg_ptr)
+		// {
+		// 	cprintf("alloc fail\n");
 			return -E_NO_MEM;
-		}
-		physaddr_t padd = page2pa(pg_ptr);
-		// cprintf("alloc page table p addr: 0x%x\n", padd);
-		pgdir[PDX(va)] = padd | PTE_P | perm;
-		pg_ptr->pp_ref++;
-		uintptr_t *kadd = (uintptr_t*)KADDR(padd);
-		kadd[PTX(va)] = page2pa(pp)|perm|PTE_P;
-		pp->pp_ref++;
+		// }
+		// physaddr_t padd = page2pa(pg_ptr);
+		// // cprintf("alloc page table p addr: 0x%x\n", padd);
+		// pgdir[PDX(va)] = padd | PTE_P | perm;
+		// pg_ptr->pp_ref++;
+		// uintptr_t *kadd = (uintptr_t*)KADDR(padd);
+		// kadd[PTX(va)] = page2pa(pp)|perm|PTE_P;
+		// pp->pp_ref++;
 	}
 	else
 	{
 		pp->pp_ref++;
-		if (*pte_ptr & PTE_P)
+		if ((*pte_ptr & PTE_P) != 0)
 		{
 			page_remove(pgdir, va);
 			tlb_invalidate(pgdir, va);
 		}
 		*pte_ptr = page2pa(pp) | perm | PTE_P;
-		pgdir[PDX(va)] = pgdir[PDX(va)] | perm;
 		// cprintf("insert after entry: 0x%x\n", *pte_ptr);
 	}
 	// cprintf("page insert done\n");

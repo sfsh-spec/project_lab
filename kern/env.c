@@ -280,7 +280,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
-	e->env_tf.tf_eflags |= FL_IF;
+    e->env_tf.tf_eflags |= FL_IF;
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
 
@@ -397,8 +397,8 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	for (;temp<end;temp++)
 	{
-		// cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
-		// temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
+		cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
+		temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
 		if (temp->p_type != ELF_PROG_LOAD)
 		{
 			// cprintf("non load segment\n");
@@ -413,7 +413,8 @@ load_icode(struct Env *e, uint8_t *binary)
 			if (!p)
 				panic("program page alloc fail");
 			page_insert(kern_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W|PTE_U);
-			e->env_pgdir[PDX(temp->p_va + PGSIZE*i)] = kern_pgdir[PDX(temp->p_va + PGSIZE*i)];
+			page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W|PTE_U);
+			// e->env_pgdir[PDX(temp->p_va + PGSIZE*i)] = kern_pgdir[PDX(temp->p_va + PGSIZE*i)];
 			// page_insert(e->env_pgdir, p, (u32*)(temp->p_va + PGSIZE*i), PTE_W | PTE_U);
 		}
 
@@ -447,7 +448,7 @@ load_icode(struct Env *e, uint8_t *binary)
 		panic("stack page alloc fail");
 	page_insert(e->env_pgdir, p_stk, (u32*)(USTACKTOP-PGSIZE), PTE_W | PTE_U);
 	e->env_tf.tf_esp = USTACKTOP-16;
-	cprintf("alloc stack done\n");
+	// cprintf("alloc stack done\n");
 	e->env_tf.tf_eip = elf_ptr->e_entry; 
 }
 
@@ -466,11 +467,22 @@ env_create(uint8_t *binary, enum EnvType type)
 	int ret = env_alloc(&new, 0);
 	// cprintf("env alloc done. new_env: 0x%x\n", (u32)new);
 	load_icode(new, binary);
-	cprintf("load icode done\n");
+	// cprintf("load icode done\n");
 
     new->env_type = type;
 	// If this is the file server (type == ENV_TYPE_FS) give it I/O privileges.
 	// LAB 5: Your code here.
+    if (type == ENV_TYPE_FS)
+    {
+        new->env_tf.tf_eflags = (new->env_tf.tf_eflags & (~FL_IOPL_MASK)) | FL_IOPL_3;
+        new->env_tf.tf_eflags &= ~FL_IF;
+        // cprintf("fs env, id 0x%x\n", new->env_id);
+    }
+    else
+    {
+        // new->env_tf.tf_eflags = (new->env_tf.tf_eflags & (~FL_IOPL_MASK)) | FL_IOPL_0;
+        cprintf("user env, id 0x%x\n", new->env_id);
+    }
 }
 
 //
@@ -612,7 +624,8 @@ env_run(struct Env *e)
 	e->env_status = ENV_RUNNING;	
 	e->env_runs++;
 	// cprintf("current CPU: %d, current env: 0x%x\n", cpunum(), (u32)curenv);
-	// cprintf("env pgdir %p\n", e->env_pgdir);
+	// cprintf("eip %x\n", (u32)e->env_tf.tf_eip);
+    // if (e->env_type == ENV_TYPE_FS)
 	// cprintf("unlock\n");
 	lcr3(PADDR(e->env_pgdir));
 	unlock_kernel();
