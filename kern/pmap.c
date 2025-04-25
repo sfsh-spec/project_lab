@@ -618,11 +618,11 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 void
 page_remove(pde_t *pgdir, void *va)
 {
-	struct PageInfo *pgptr = page_lookup(pgdir, va, NULL);
+	pte_t *pteptr = NULL;
+	struct PageInfo *pgptr = page_lookup(pgdir, va, &pteptr);
 	if (!pgptr)
 		return;
 	page_decref(pgptr);
-	pte_t *pteptr = pgdir_walk(pgdir, va, 0);
 	*pteptr = 0;
 	tlb_invalidate(pgdir, va);
 	// Fill this function in

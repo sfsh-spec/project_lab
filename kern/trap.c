@@ -269,7 +269,7 @@ trap_dispatch(struct Trapframe *tf)
 	switch (trap_num)
 	{
 		case (IRQ_TIMER + IRQ_OFFSET):
-			cprintf("clock interrupt\n");
+			// cprintf("clock interrupt\n");
 			lapic_eoi();
 			sched_yield();
 			return;

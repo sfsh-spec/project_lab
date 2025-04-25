@@ -397,8 +397,8 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	for (;temp<end;temp++)
 	{
-		cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
-		temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
+		// cprintf("p_type 0x%x, p_offset 0x%x, p_va 0x%x, p_filesz 0x%x\np_memsz 0x%x, p_flags 0x%x, p_align 0x%x\n",
+		// temp->p_type, temp->p_offset, temp->p_va, temp->p_filesz, temp->p_memsz,temp->p_flags, temp->p_align);
 		if (temp->p_type != ELF_PROG_LOAD)
 		{
 			// cprintf("non load segment\n");
@@ -423,23 +423,23 @@ load_icode(struct Env *e, uint8_t *binary)
 		// cprintf("round 0x%x\n", (u32)temp);
 	}
 
-	temp = (struct Proghdr *)((uint8_t*)elf_ptr + elf_ptr->e_phoff);
-	for (; temp<end;temp++)
-	{	
-		if (temp->p_type != ELF_PROG_LOAD)
-		{
-			// cprintf("non load segment\n");
-			continue;
-		}
+	// temp = (struct Proghdr *)((uint8_t*)elf_ptr + elf_ptr->e_phoff);
+	// for (; temp<end;temp++)
+	// {	
+	// 	if (temp->p_type != ELF_PROG_LOAD)
+	// 	{
+	// 		// cprintf("non load segment\n");
+	// 		continue;
+	// 	}
 
-		u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
-		for (u32 i = 0; i<pg_num; i++)
-		{
-			kern_pgdir[PDX(temp->p_va + PGSIZE*i)] = 0;
-		}
-	}
+	// 	u32 pg_num = ROUNDUP(temp->p_memsz, PGSIZE)/PGSIZE;
+	// 	for (u32 i = 0; i<pg_num; i++)
+	// 	{
+	// 		kern_pgdir[PDX(temp->p_va + PGSIZE*i)] = 0;
+	// 	}
+	// }
 	// Now map one page for the program's initial stack
-	// at virtual address USTACKTOP - PGSIZE.
+	// at virtual address USTACKTOP - PGSIZE. 
 
 	// LAB 3: Your code here.
 	// cprintf("alloc stack\n");
@@ -475,7 +475,7 @@ env_create(uint8_t *binary, enum EnvType type)
     if (type == ENV_TYPE_FS)
     {
         new->env_tf.tf_eflags = (new->env_tf.tf_eflags & (~FL_IOPL_MASK)) | FL_IOPL_3;
-        new->env_tf.tf_eflags &= ~FL_IF;
+        // new->env_tf.tf_eflags &= ~FL_IF;
         // cprintf("fs env, id 0x%x\n", new->env_id);
     }
     else

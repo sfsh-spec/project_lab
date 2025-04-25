@@ -50,7 +50,18 @@ bc_pgfault(struct UTrapframe *utf)
 	// the disk.
 	//
 	// LAB 5: you code here:
+    void *align_addr = ROUNDDOWN(addr, PGSIZE);
+    int ret = sys_page_alloc(0, align_addr, PTE_W | PTE_U | PTE_P);
+    if (ret < 0)
+    {
+        panic("in bc_pgfault, alloc page fail");
+    }
 
+    ret = ide_read(blockno*BLKSECTS, align_addr, BLKSECTS);
+    if (ret < 0)
+    {
+        panic("in bc_pgfault, ide read fail");
+    }
 	// Clear the dirty bit for the disk block page since we just read the
 	// block from disk
 	if ((r = sys_page_map(0, addr, 0, addr, uvpt[PGNUM(addr)] & PTE_SYSCALL)) < 0)
@@ -88,10 +99,11 @@ static void
 check_bc(void)
 {
 	struct Super backup;
-
+    cprintf("start check bc. size %x\n", sizeof(struct Super));
 	// back up super block
 	memmove(&backup, diskaddr(1), sizeof backup);
 
+    cprintf(" check 1\n");
 	// smash it
 	strcpy(diskaddr(1), "OOPS!\n");
 	flush_block(diskaddr(1));
