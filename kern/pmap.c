@@ -158,8 +158,10 @@ mem_init(void)
 	// array.  'npages' is the number of physical pages in memory.  Use memset
 	// to initialize all fields of each struct PageInfo to 0.
 	// Your code goes here:
-	pages = (struct PageInfo *)boot_alloc(npages*8);
-	memset(pages, 0, npages * 8);
+  	u32 pginfo_unit_sz = ROUNDUP(sizeof(struct PageInfo), sizeof(u32));
+	cprintf("pginfo size %d", pginfo_unit_sz);
+	pages = (struct PageInfo *)boot_alloc(npages * pginfo_unit_sz);
+	memset(pages, 0, npages * pginfo_unit_sz);
 
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.

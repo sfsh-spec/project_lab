@@ -239,6 +239,7 @@ trap_dispatch(struct Trapframe *tf)
 	// cprintf("  trap 0x%08x %s\n", trap_num, t_name);
 	// print_trapframe(tf);
 	
+	int ret = 0;
 	switch (trap_num)
 	{
 		case T_DIVIDE:
@@ -256,7 +257,7 @@ trap_dispatch(struct Trapframe *tf)
 		
 		case T_SYSCALL:
 			// cprintf("syscall num: 0x%x\n",tf->tf_regs.reg_eax);
-			int ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
+			ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,
 				tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
 			tf->tf_regs.reg_eax = ret;
 			return;
