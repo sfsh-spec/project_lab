@@ -137,7 +137,49 @@ static int
 file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool alloc)
 {
        // LAB 5: Your code here.
-       panic("file_block_walk not implemented");
+    //    panic("file_block_walk not implemented");
+    if (filebno >= NDIRECT + NINDIRECT)
+    {
+        return -E_INVAL;
+    }
+
+    if (filebno < NDIRECT)
+    {
+        *ppdiskbno = &f->f_direct[filebno];
+        return 0;
+    }
+    else // filebno >= NDIRECT
+    {
+        u32 offset = filebno - NDIRECT;
+        if (f->f_indirect == 0)
+        {
+            if (alloc)
+            {
+                int alloc_bno = alloc_block();
+                if (alloc_bno != 0)
+                {
+                    return -E_NO_DISK;
+                }
+                else
+                {
+                    f->f_indirect = alloc_bno;
+                    u32 *indirect_addr = (u32*)diskaddr(f->f_indirect);
+                    *ppdiskbno = &indirect_addr[offset]; 
+                    return 0;
+                }
+            }
+            else
+            {
+                return -E_NOT_FOUND;
+            }
+        }
+        else
+        {
+            u32 *indirect_addr = (u32*)diskaddr(f->f_indirect);
+            *ppdiskbno = &indirect_addr[offset]; 
+            return 0;
+        }
+    }
 }
 
 // Set *blk to the address in memory where the filebno'th
