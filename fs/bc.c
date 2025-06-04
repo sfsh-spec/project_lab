@@ -93,7 +93,7 @@ flush_block(void *addr)
 	// panic("flush_block not implemented");
     int ret = 0;
     void *align_addr = ROUNDDOWN(addr, PGSIZE);
-    if (va_is_mapped(align_addr) || va_is_dirty(align_addr))
+    if (va_is_mapped(align_addr) && va_is_dirty(align_addr))
     {
         ret = ide_write(blockno * BLKSECTS, align_addr, BLKSECTS);
         if (ret < 0)

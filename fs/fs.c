@@ -64,7 +64,17 @@ alloc_block(void)
 	// super->s_nblocks blocks in the disk altogether.
 
 	// LAB 5: Your code here.
-	panic("alloc_block not implemented");
+	// panic("alloc_block not implemented");
+    u32 free_blk_start = 2 + (super->s_nblocks + BLKBITSIZE-1) / BLKBITSIZE + 1;
+    for (int i = free_blk_start; i < super->s_nblocks; i++)
+    {
+        if (block_is_free(i))
+        {
+            bitmap[i/32] &= ~(1<<(i%32));
+            flush_block(diskaddr(2+i/BLKBITSIZE));
+            return i;
+        }
+    }
 	return -E_NO_DISK;
 }
 
@@ -145,7 +155,7 @@ file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool all
 
     if (filebno < NDIRECT)
     {
-        *ppdiskbno = &f->f_direct[filebno];
+        *ppdiskbno = f->f_direct+filebno;
         return 0;
     }
     else // filebno >= NDIRECT
@@ -156,7 +166,7 @@ file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool all
             if (alloc)
             {
                 int alloc_bno = alloc_block();
-                if (alloc_bno != 0)
+                if (alloc_bno < 0)
                 {
                     return -E_NO_DISK;
                 }
@@ -194,7 +204,40 @@ int
 file_get_block(struct File *f, uint32_t filebno, char **blk)
 {
        // LAB 5: Your code here.
-       panic("file_get_block not implemented");
+    //    panic("file_get_block not implemented");
+    u32 *getblk;
+    if (filebno >= NDIRECT + NINDIRECT)
+    {
+        printf("wrong file blk number");
+        return -E_INVAL;
+    }
+
+    if (file_block_walk(f, filebno, &getblk, 1) < 0)
+    {
+        return -E_NO_DISK;
+    }
+    else
+    {
+        if (*getblk == 0)
+        {
+            int alloc = alloc_block();
+            if (alloc < 0)
+            {
+                return alloc;
+            }
+            else
+            {
+                *getblk = alloc;
+                *blk = diskaddr(alloc);
+            }
+        }
+        else
+        {
+            *blk = diskaddr(*getblk);
+        }
+    }
+
+    return 0;
 }
 
 // Try to find a file named "name" in dir.  If so, set *file to it.
