@@ -190,7 +190,7 @@ mem_init(void)
 	//      (ie. perm = PTE_U | PTE_P)
 	//    - pages itself -- kernel RW, user NONE 
 	// Your code goes here:
-	boot_map_region(kern_pgdir, UPAGES, 64*PGSIZE, PADDR(pages), PTE_P|PTE_W);
+	boot_map_region(kern_pgdir, UPAGES, 64*PGSIZE, PADDR(pages), PTE_P|PTE_U);
 	boot_map_region(kern_pgdir, UPAGES+64*PGSIZE, PTSIZE-64*PGSIZE,
 			PADDR(pages+64*PGSIZE/sizeof(struct PageInfo)),PTE_U|PTE_P);
 			
