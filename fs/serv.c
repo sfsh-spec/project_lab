@@ -254,7 +254,7 @@ serve_write(envid_t envid, struct Fsreq_write *req)
 	if (r > 0)
 	{
 		o->o_fd->fd_offset += req->req_n;
-		flush_block(o->o_file);
+        file_flush(o->o_file);
 	}
 	return r;
 }

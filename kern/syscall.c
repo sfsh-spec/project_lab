@@ -400,11 +400,10 @@ sys_ipc_recv(void *dstva)
 	curenv->env_status = ENV_NOT_RUNNABLE;
 	if ((u32)dstva < UTOP)
 	{
-		if ( (u32)dstva % PGSIZE != 0)
+		if ((u32)dstva % PGSIZE != 0)
 			return -E_INVAL;
 	}
 
-	curenv->env_ipc_dstva = dstva;
 	curenv->env_tf.tf_regs.reg_eax = 0;
 	return 0;
 	// panic("sys_ipc_recv not implemented");
