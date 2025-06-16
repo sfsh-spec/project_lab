@@ -154,8 +154,9 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 	e->env_tf.tf_es = GD_UD | 3;
 	e->env_tf.tf_ss = GD_UD | 3;
 	e->env_tf.tf_cs = GD_UT | 3;
-    e->env_tf.tf_eflags |= FL_IF;
+    // e->env_tf.tf_eflags |= FL_IF;
 	e->env_tf.tf_eflags &= (~FL_IOPL_MASK) | FL_IOPL_0;
+    return 0;
 }
 
 // Set the page fault upcall for 'envid' by modifying the corresponding struct
@@ -507,6 +508,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 			ret7 = sys_ipc_recv((void*)a1);
 			// cprintf("~~~~~ipc recv return: %d\n", ret7);
 			return ret7;
+
+        case SYS_env_set_trapframe:
+            ret = sys_env_set_trapframe(a1, (void*)a2);
+            return ret;
 
 		default:
 			return -E_INVAL;
