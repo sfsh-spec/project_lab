@@ -78,6 +78,16 @@ duppage(envid_t envid, unsigned pn)
 	if ((uvptab[pn] & PTE_P) == 0)
 		panic("page %d does not exist in current address space\n", pn);
 	int perm = PTE_P | PTE_U; 
+
+    if (uvptab[pn] & PTE_SHARE)
+    {
+        perm |= uvptab[pn] & PTE_SYSCALL;
+        r = sys_page_map(0, (void*)(pn*PGSIZE), envid, (void*)(pn*PGSIZE), perm);
+        if (r != 0)
+            panic("page map fail\n");
+        return 0;
+    }
+
 	val1 = uvptab[pn] & PTE_W;
 	val2 = uvptab[pn] & PTE_COW;
 	// cprintf("val1: %d val2: %d\n", val1, val2);

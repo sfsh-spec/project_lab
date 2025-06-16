@@ -302,6 +302,38 @@ static int
 copy_shared_pages(envid_t child)
 {
 	// LAB 5: Your code here.
+	// thisenv = 0;
+	int env_id = sys_getenvid();
+	// thisenv = &envs[ENVX(env_id)];
+
+	extern volatile pte_t uvpt[];     // VA of "virtual page table"
+	extern volatile pde_t uvpd[];     // VA of current page directory
+    int r;
+    u32 pn;
+	for (pn = 0; pn < (UTOP-PGSIZE)/PGSIZE; pn++)
+	{
+		if ((uvpd[pn>>10] & PTE_P) == 0)
+		{
+			continue;
+		}
+		else
+		{
+			if ((uvpt[pn] & PTE_P) == 0)
+				continue;
+			else
+			{
+                if (uvpt[pn] & PTE_SHARE)
+                {
+                    u32 perm = uvpt[pn] & PTE_SYSCALL;
+                    r = sys_page_map(0, (void*)(pn*PGSIZE), child, (void*)(pn*PGSIZE), perm);
+                    if (r != 0)
+                    {
+                        panic("child map fail");
+                    }
+                }
+			}
+		}
+	}
 	return 0;
 }
 
