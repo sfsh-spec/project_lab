@@ -475,7 +475,6 @@ env_create(uint8_t *binary, enum EnvType type)
     if (type == ENV_TYPE_FS)
     {
         new->env_tf.tf_eflags = (new->env_tf.tf_eflags & (~FL_IOPL_MASK)) | FL_IOPL_3;
-        // new->env_tf.tf_eflags &= ~FL_IF;
         // cprintf("fs env, id 0x%x\n", new->env_id);
     }
     else
