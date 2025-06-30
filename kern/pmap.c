@@ -10,6 +10,7 @@
 #include <kern/kclock.h>
 #include <kern/env.h>
 #include <kern/cpu.h>
+#include <kern/pcie.h>
 
 // These variables are set by i386_detect_memory()
 size_t npages;			// Amount of physical memory (in pages)
@@ -60,6 +61,7 @@ i386_detect_memory(void)
 }
 
 
+extern u32 nvme_read(u32 offset);
 // --------------------------------------------------------------
 // Set up memory mappings above UTOP.
 // --------------------------------------------------------------
@@ -114,79 +116,11 @@ boot_alloc(uint32_t n)
 	// cprintf("next free after: 0x%x\n", nextfree);
 	return result;
 }
-#define RSDP_SEARCH_START 0x000E0000
-#define RSDP_SEARCH_END   0x00100000
 
-// 计算 length 字节的校验和
-uint8_t acpi_checksum(uint8_t *ptr, size_t length) {
-    uint8_t sum = 0;
-    for (size_t i = 0; i < length; i++) {
-        sum += ptr[i];
-    }
-    return sum;
-}
-
-bool is_valid_rsdp(uint8_t *ptr) {
-    // 签名检查
-    if (memcmp(ptr, "RSD PTR ", 8) != 0) {
-        return false;
-    }
-
-    // ACPI 1.0 checksum
-    if (acpi_checksum(ptr, 20) != 0) {
-        return false;
-    }
-
-    // 如果是 ACPI 2.0+
-    uint8_t revision = ptr[15];
-    if (revision >= 2) {
-        uint32_t len = *(uint32_t*)(ptr + 20); // length 字段偏移 = 20
-        if (len < 36) return false;
-        if (acpi_checksum(ptr, len) != 0) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-typedef struct rsdp1 {
-    char     signature[8];     // "RSD PTR "
-    uint8_t  checksum;
-    char     oem_id[6];
-    uint8_t  revision;         // 0 表示 ACPI 1.0
-    uint32_t rsdt_address;     // ✅ 这里是 RSDT 的物理地址
-} rsdp1_t;
-
-void scan_rsdp()
-{
-    rsdp1_t *p = NULL;
-    for (uintptr_t addr = RSDP_SEARCH_START; addr < RSDP_SEARCH_END; addr += 16)
-    {
-        if (is_valid_rsdp((uint8_t*)addr))
-        {
-            // found it!
-            cprintf("found!! addr 0x%x\n", addr);
-            p = (rsdp1_t*)addr;
-            break;
-        }
-    }
-    uint32_t rsdt_addr = *(uint32_t *)(p + 16);
-    cprintf("ver %d rsdt addr 0x%x\n", p->revision, rsdt_addr);
-
-}
-
-#define IOAPIC_BASE 0xFEC00000 
-#define IOREGSEL(ioapic_addr) (*(volatile uint32_t *)(ioapic_addr + 0x00))
-#define IOWIN(ioapic_addr)    (*(volatile uint32_t *)(ioapic_addr + 0x10))
-
-uint32_t ioapic_read(u32 base, uint8_t reg)
-{
-    IOREGSEL(base) = reg;
-    return IOWIN(base);
-}
-
-u32 ioapic_addr;
+extern u32 ioapic_base;
+extern u32 ioapic_addr;
+extern u32 nvme_addr;
+extern uint32_t ioapic_read(u32 base, u8 reg);
 // Set up a two-level page table:
 //    kern_pgdir is its linear (virtual) address of the root
 //
@@ -204,7 +138,6 @@ mem_init(void)
 
 	// Find out how much memory the machine has (npages & npages_basemem).
 	i386_detect_memory();
-    scan_rsdp();
 	// Remove this line when you're ready to test this function.
 	//panic("mem_init: This function is not finished\n");
 	//cprintf("size of struct: 0x%x\n", sizeof(struct PageInfo));
@@ -322,7 +255,11 @@ mem_init(void)
 	check_kern_pgdir();
 
 
-    ioapic_addr =  (u32)mmio_map_region(IOAPIC_BASE, PGSIZE);
+    ioapic_addr =  (u32)mmio_map_region(ioapic_base, PGSIZE);
+    cprintf("ioapic addr  0x%x\n", ioapic_addr);
+    u32 nvme_base = pci_scan();
+    nvme_addr = (u32)mmio_map_region(nvme_base, PGSIZE);
+    cprintf("nvme addr  0x%x\n", nvme_addr);
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be
@@ -347,6 +284,10 @@ mem_init(void)
 
     u32 ver = ioapic_read(ioapic_addr, 1);
     cprintf("ioapic 0x%x\n", ver);
+    u32 val = nvme_read(0);
+    cprintf("nvme offset 0 0x%x\n", val);
+    val = nvme_read(8);
+    cprintf("nvme offset 1 0x%x\n", val);
 }
 
 // Modify mappings in kern_pgdir to support SMP
