@@ -70,11 +70,11 @@ u32 nvme_dev_scan(u32 *mmio_base, u32 *msix_entry_base)
                     uint32_t bar0 = pci_config_read32(bus, dev, func, 0x10);
                     *mmio_base = bar0 & ~0xF;  // 清除低位 flag 位
                     cprintf("NVMe MMIO base: 0x%x\n", *mmio_base);
-                    for (int i = 0; i < 0x100; i+=2)
-                    {
-                        u32 msix_info = pci_config_read16(bus, dev, func, 0x34+i);
-                        cprintf("offset 0x%x msix_info: 0x%x\n", i+0x34, msix_info);
-                    }
+                    // for (int i = 0; i < 0x100; i+=2)
+                    // {
+                    //     u32 msix_info = pci_config_read16(bus, dev, func, 0x34+i);
+                    //     cprintf("offset 0x%x msix_info: 0x%x\n", i+0x34, msix_info);
+                    // }
 
                     u32 cap_offset = 0x40;
                     uint16_t msg_ctl = pci_config_read16(bus, dev, func, cap_offset + 0x2);

@@ -65,6 +65,8 @@ int nvme_init()
     u32 ver = nvme_read(REG_VS);
     cprintf("ver %x\n", ver);
 
+    u32 config = nvme_read(REG_CC);
+    cprintf("nvme config 0x%x\n", config);
     nvme_write(REG_CC, 0);
     u32 val;
     u32 timeout = 0;

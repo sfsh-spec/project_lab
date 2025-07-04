@@ -293,7 +293,7 @@ mem_init(void)
     u32 val = nvme_read(0);
     cprintf("nvme offset 0 0x%x\n", val);
     val = nvme_read(8);
-    cprintf("nvme offset 1 0x%x\n", val);
+    cprintf("nvme offset 2 0x%x\n", val);
 }
 
 // Modify mappings in kern_pgdir to support SMP
