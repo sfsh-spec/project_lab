@@ -119,7 +119,8 @@ boot_alloc(uint32_t n)
 
 extern u32 ioapic_base;
 extern u32 ioapic_addr;
-extern u32 nvme_addr;
+extern u32 nvme_vaddr;
+extern u32 nvme_msix_entry_vbase;
 extern uint32_t ioapic_read(u32 base, u8 reg);
 // Set up a two-level page table:
 //    kern_pgdir is its linear (virtual) address of the root
@@ -257,9 +258,14 @@ mem_init(void)
 
     ioapic_addr =  (u32)mmio_map_region(ioapic_base, PGSIZE);
     cprintf("ioapic addr  0x%x\n", ioapic_addr);
-    u32 nvme_base = pci_scan();
-    nvme_addr = (u32)mmio_map_region(nvme_base, PGSIZE);
-    cprintf("nvme addr  0x%x\n", nvme_addr);
+    u32 nvme_reg_base = 0;
+    u32 nvme_msi_entry_base = 0;
+    nvme_dev_scan(&nvme_reg_base, &nvme_msi_entry_base);
+    nvme_vaddr = (u32)mmio_map_region(nvme_reg_base, PGSIZE*3);
+    cprintf("nvme addr  0x%x\n", nvme_vaddr);
+    nvme_msix_entry_vbase = (u32)mmio_map_region(nvme_msi_entry_base, PGSIZE);
+
+
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be

@@ -98,6 +98,7 @@ trap_init(void)
 	extern void i_serial();
 	extern void i_spurious();
 	extern void i_ide();
+	extern void i_nvme();
 	// cprintf("divide handle addr 0x%x\n", (u32)t_divide);
 	// LAB 3: Your code here.
 	SETGATE(idt[T_DIVIDE], 1, GD_KT, t_divide, 1)
@@ -126,6 +127,7 @@ trap_init(void)
 	SETGATE(idt[IRQ_SERIAL+IRQ_OFFSET], 0, GD_KT, i_serial, 3)
 	SETGATE(idt[IRQ_SPURIOUS+IRQ_OFFSET], 0, GD_KT, i_spurious, 3)
 	SETGATE(idt[IRQ_IDE+IRQ_OFFSET], 0, GD_KT, i_ide, 3)
+	SETGATE(idt[0x20+IRQ_OFFSET], 0, GD_KT, i_nvme, 1)
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -276,10 +278,12 @@ trap_dispatch(struct Trapframe *tf)
 			return;
 
         case (IRQ_KBD + IRQ_OFFSET):
+			lapic_eoi();
             kbd_intr();
             return;
 
         case (IRQ_SERIAL + IRQ_OFFSET):
+			lapic_eoi();
             serial_intr();
             return;
 

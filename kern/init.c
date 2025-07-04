@@ -14,6 +14,7 @@
 #include <kern/picirq.h>
 #include <kern/cpu.h>
 #include <kern/spinlock.h>
+#include <kern/nvme.h>
 
 static void boot_aps(void);
 
@@ -42,9 +43,13 @@ i386_init(void)
 	mp_init();
 	lapic_init();
 
+
 	// Lab 4 multitasking initialization functions
 	pic_init();
 
+    ioapic_init();
+
+    nvme_init();
 	// Acquire the big kernel lock before waking up APs
 	// Your code here:
 	lock_kernel();
@@ -59,7 +64,8 @@ i386_init(void)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(user_faultio, ENV_TYPE_USER);
+	ENV_CREATE(user_icode, ENV_TYPE_USER);
+	// ENV_CREATE(user_hello, ENV_TYPE_USER);
 	// ENV_CREATE(user_hello, ENV_TYPE_USER);
 	// ENV_CREATE(user_hello, ENV_TYPE_USER);
 	// ENV_CREATE(user_yield, ENV_TYPE_USER);

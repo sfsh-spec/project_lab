@@ -39,6 +39,8 @@
 #define IRQ_IDE         14
 #define IRQ_ERROR       19
 
+#define IRQ_NVME        0x40
+
 #ifndef __ASSEMBLER__
 
 #include <inc/types.h>
