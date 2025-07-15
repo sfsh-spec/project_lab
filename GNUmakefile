@@ -154,6 +154,7 @@ QEMUOPTS += -drive file=$(OBJDIR)/fs/fs.img,index=1,media=disk,format=raw
 QEMUOPTS += -drive file=$(TOP)/nvme/disk.img,format=raw,if=none,id=nvme0 -device nvme,drive=nvme0,serial=deadbeef,
 IMAGES += $(OBJDIR)/fs/fs.img
 QEMUOPTS += $(QEMUEXTRA)
+QEMUOPTS += -no-reboot -no-shutdown -d int
 
 .gdbinit: .gdbinit.tmpl
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@

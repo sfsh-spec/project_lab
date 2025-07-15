@@ -146,7 +146,7 @@ mem_init(void)
 	// create initial page directory.
 	kern_pgdir = (pde_t *) boot_alloc(PGSIZE);
 	memset(kern_pgdir, 0, PGSIZE);
-	cprintf("bootstack_addr: 0x%x\n", (int)bootstack);
+	cprintf("bootstack_addr: 0x%x\n", (u32)bootstack);
 	cprintf("kern_pgdir addr: 0x%x\n", (u32)kern_pgdir);
 	//////////////////////////////////////////////////////////////////////
 	// Recursively insert PD in itself as a page table, to form
@@ -429,7 +429,7 @@ page_free(struct PageInfo *pp)
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
 	if (pp->pp_ref != 0 || pp->pp_link != NULL)
-			panic("nonzero pp_ref or illegal pp_link");
+        panic("nonzero pp_ref or illegal pp_link");
 	pp->pp_link = page_free_list;
 	page_free_list = pp; 
 
@@ -475,8 +475,6 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
 	pde_t pd_entry = pgdir[PDX(va)];
-	//cprintf("page walk\n");
-	//cprintf("pd entry: 0x%x\n", pd_entry);
 	if ((pd_entry & PTE_P) == 0)
 	{
 		if (create == false)
@@ -522,18 +520,11 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	// Fill this function in
 	// cprintf("boot map region  va:0x%x pa: 0x%x size: 0x%x\n", va, pa, size);
 	pte_t *pt_entry  = NULL;
-	int j = 0;
 	for (int i = 0; i<size/PGSIZE; i++)
 	{	
-			pt_entry = pgdir_walk(pgdir, (unsigned char*)(va+PGSIZE*i), 1);
-			j = 0;
-			pgdir[PDX(va+PGSIZE*i)] |= perm;
-			// cprintf("pde pos 0x%x\n", PDX(va+PGSIZE*i));
+        pt_entry = pgdir_walk(pgdir, (unsigned char*)(va+PGSIZE*i), 1);
+        pgdir[PDX(va+PGSIZE*i)] |= perm;
 		*(pt_entry) = (pa+i*PGSIZE) | perm | PTE_P;
-		// j++;
-		//cprintf("pd_entry: 0x%x\n", *(pd_entry+j));
-		//if (i%64 == 0)
-			//cprintf("map i: %x\n", i);
 	}	
 }
 
@@ -566,24 +557,10 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
-	// cprintf("page insert\n");
 	pte_t *pte_ptr = pgdir_walk(pgdir, va, 1);
 	if (pte_ptr == NULL)
 	{
-		// cprintf("page insert alloc\n");
-		// struct PageInfo * pg_ptr = page_alloc(ALLOC_ZERO);
-		// if (!pg_ptr)
-		// {
-		// 	cprintf("alloc fail\n");
-			return -E_NO_MEM;
-		// }
-		// physaddr_t padd = page2pa(pg_ptr);
-		// // cprintf("alloc page table p addr: 0x%x\n", padd);
-		// pgdir[PDX(va)] = padd | PTE_P | perm;
-		// pg_ptr->pp_ref++;
-		// uintptr_t *kadd = (uintptr_t*)KADDR(padd);
-		// kadd[PTX(va)] = page2pa(pp)|perm|PTE_P;
-		// pp->pp_ref++;
+        return -E_NO_MEM;
 	}
 	else
 	{
@@ -594,9 +571,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 			tlb_invalidate(pgdir, va);
 		}
 		*pte_ptr = page2pa(pp) | perm | PTE_P;
-		// cprintf("insert after entry: 0x%x\n", *pte_ptr);
 	}
-	// cprintf("page insert done\n");
 	return 0;
 }
 
@@ -620,6 +595,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 	{
 		*pte_store = ptr;
 	}
+
 	if (ptr && (*ptr & PTE_P))
 	{
 		return pa2page(PTE_ADDR(*ptr));
@@ -645,6 +621,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 void
 page_remove(pde_t *pgdir, void *va)
 {
+	// Fill this function in
 	pte_t *pteptr = NULL;
 	struct PageInfo *pgptr = page_lookup(pgdir, va, &pteptr);
 	if (!pgptr)
@@ -652,7 +629,6 @@ page_remove(pde_t *pgdir, void *va)
 	page_decref(pgptr);
 	*pteptr = 0;
 	tlb_invalidate(pgdir, va);
-	// Fill this function in
 }
 
 //
